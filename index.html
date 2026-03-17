@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF7F2;
+    --ink: #1C1B18;
+    --muted: #7A7670;
+    --accent: #C6703A;
+    --light-border: #E5E0D8;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); }
+
+  /* ── Navigation ── */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 5vw; border-bottom: 1px solid var(--light-border);
+    position: sticky; top: 0; background: var(--cream); z-index: 100;
+  }
+  nav .logo { font-family: 'Playfair Display', serif; font-size: 1.3rem; letter-spacing: 0.02em; }
+  nav ul { list-style: none; display: flex; gap: 2rem; }
+  nav ul li a { text-decoration: none; color: var(--muted); font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  nav ul li a:hover { color: var(--accent); }
+
+  /* ── Hero ── */
+  .hero {
+    display: grid; grid-template-columns: 1fr 1fr; min-height: 85vh;
+    padding: 5vw; gap: 4rem; align-items: center;
+  }
+  .hero-text h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.15; margin-bottom: 1.5rem; }
+  .hero-text h1 span { color: var(--accent); }
+  .hero-text p { font-size: 1.1rem; color: var(--muted); line-height: 1.8; max-width: 480px; margin-bottom: 2rem; }
+  .btn {
+    display: inline-block; padding: 0.9rem 2rem; background: var(--ink); color: var(--cream);
+    text-decoration: none; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase;
+    transition: background 0.2s; cursor: pointer;
+  }
+  .btn:hover { background: var(--accent); }
+  .btn-outline { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); margin-left: 1rem; }
+  .btn-outline:hover { background: var(--ink); color: var(--cream); }
+
+  /* ── Photo placeholder ── */
+  .hero-image { position: relative; display: flex; align-items: center; justify-content: center; }
+  .photo-placeholder {
+    width: 100%; max-width: 420px; aspect-ratio: 4/5;
+    background: linear-gradient(135deg, #E8E2D8 0%, #D4CCBC 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; color: var(--muted); font-size: 0.9rem; text-align: center;
+    border: 2px dashed var(--light-border); padding: 2rem;
+  }
+  .photo-placeholder .icon { font-size: 3rem; opacity: 0.4; }
+  .photo-placeholder strong { font-size: 1rem; color: var(--ink); }
+
+  /*
+    ── HOW TO ADD YOUR PHOTO ──
+    1. Save your photo in the same folder as this file, e.g. "myphoto.jpg"
+    2. Delete the <div class="photo-placeholder">...</div> section below
+    3. Replace it with: <img src="myphoto.jpg" alt="Your Name" style="width:100%;max-width:420px;aspect-ratio:4/5;object-fit:cover;">
+  */
+
+  /* ── Sections ── */
+  section { padding: 5rem 5vw; }
+  .section-label { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 1rem; }
+
+  /* ── About ── */
+  .about { display: grid; grid-template-columns: 1fr 1.5fr; gap: 5rem; align-items: start; border-top: 1px solid var(--light-border); }
+  .about-body { color: var(--muted); line-height: 1.9; font-size: 1.05rem; }
+  .about-body p { margin-bottom: 1.2rem; }
+  .skills { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
+  .skill-tag { padding: 0.4rem 1rem; border: 1px solid var(--light-border); font-size: 0.85rem; color: var(--muted); }
+
+  /* ── Work / Gallery ── */
+  .work { border-top: 1px solid var(--light-border); }
+  .work-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 3rem; }
+  .work-card { cursor: pointer; }
+  .work-card-img {
+    width: 100%; aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #E8E2D8, #D4CCBC);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 0.85rem; text-align: center; padding: 1rem;
+    border: 2px dashed var(--light-border); margin-bottom: 1rem;
+    transition: transform 0.3s;
+  }
+
+  /*
+    ── HOW TO ADD YOUR ARTWORK / DRAWINGS ──
+    1. Save your image in the same folder, e.g. "drawing1.jpg"
+    2. Replace the <div class="work-card-img">...</div> with:
+       <img src="drawing1.jpg" alt="My Drawing" style="width:100%;aspect-ratio:4/3;object-fit:cover;margin-bottom:1rem;">
+  */
+
+  .work-card:hover .work-card-img { transform: scale(0.98); }
+  .work-card h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .work-card p { font-size: 0.85rem; color: var(--muted); }
+
+  /* ── Contact ── */
+  .contact { border-top: 1px solid var(--light-border); background: var(--ink); color: var(--cream); padding: 5rem 5vw; }
+  .contact .section-label { color: #C6703A; }
+  .contact .section-title { color: var(--cream); margin-bottom: 1rem; }
+  .contact p { color: #B0ABA3; max-width: 500px; margin-bottom: 2.5rem; line-height: 1.8; }
+  .contact-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .contact-link {
+    padding: 0.9rem 1.8rem; border: 1px solid #444; color: var(--cream);
+    text-decoration: none; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .contact-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Footer ── */
+  footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--light-border); background: var(--cream); }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .hero { grid-template-columns: 1fr; min-height: auto; gap: 2rem; }
+    .about { grid-template-columns: 1fr; gap: 2rem; }
+    nav ul { gap: 1rem; }
+    .hero-text h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==========================================
+     NAVIGATION
+     Change "Your Name" to your real name
+     ========================================== -->
+<nav>
+  <div class="logo">Your Name</div>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ==========================================
+     HERO SECTION
+     - Change "Your Name" in the h1
+     - Change the tagline (artist & creator)
+     - Change the paragraph to describe yourself
+     - Replace the photo placeholder with your image (see comment above in CSS)
+     ========================================== -->
+<section class="hero">
+  <div class="hero-text">
+    <p class="section-label">Portfolio</p>
+    <h1>Hello, I'm <span>Your Name</span> — artist &amp; creator.</h1>
+    <p>Welcome to my little corner of the internet. Here you'll find my artwork, projects, and the things I love to make.</p>
+    <a href="#work" class="btn">See My Work</a>
+    <a href="#contact" class="btn btn-outline">Say Hello</a>
+  </div>
+  <div class="hero-image">
+    <div class="photo-placeholder">
+      <div class="icon">📷</div>
+      <strong>Your Photo Here</strong>
+      <span>Replace this with your image (see instructions in the code)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     ABOUT SECTION
+     - Change the paragraph text to tell your story
+     - Update or add/remove skill tags
+     ========================================== -->
+<section id="about" class="about">
+  <div>
+    <p class="section-label">About Me</p>
+    <h2 class="section-title">A little bit about who I am.</h2>
+  </div>
+  <div class="about-body">
+    <p>Hi there! I'm [Your Name], and I'm passionate about [your interests — art, design, photography, writing, etc.]. This is your space to introduce yourself in your own words!</p>
+    <p>Tell people where you're from, what you love to do, what inspires you. This is your story.</p>
+    <div class="skills">
+      <span class="skill-tag">Drawing</span>
+      <span class="skill-tag">Painting</span>
+      <span class="skill-tag">Photography</span>
+      <span class="skill-tag">Add your skill</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     WORK / GALLERY SECTION
+     - Change each project title and description
+     - Replace the placeholder divs with your images (see instructions in CSS)
+     - Add or remove cards as needed
+     ========================================== -->
+<section id="work" class="work">
+  <p class="section-label">My Work</p>
+  <h2 class="section-title">Things I've created.</h2>
+  <div class="work-grid">
+
+    <div class="work-card">
+      <div class="work-card-img">🖼️<br><br>Add your artwork or drawing here</div>
+      <h3>Project Title</h3>
+      <p>A short description of this piece</p>
+    </div>
+
+    <div class="work-card">
+      <div class="work-card-img">🎨<br><br>Add another image here</div>
+      <h3>Project Title</h3>
+      <p>A short description of this piece</p>
+    </div>
+
+    <div class="work-card">
+      <div class="work-card-img">✏️<br><br>Add another image here</div>
+      <h3>Project Title</h3>
+      <p>A short description of this piece</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==========================================
+     CONTACT SECTION
+     - Change the email address in the href (mailto:youremail@email.com)
+     - Change the button text if you like
+     - Add your Instagram / social links
+     ========================================== -->
+<div id="contact" class="contact">
+  <p class="section-label">Contact</p>
+  <h2 class="section-title">Let's connect.</h2>
+  <p>I'd love to hear from you! Whether you want to collaborate, commission something, or just say hello — reach out.</p>
+  <div class="contact-links">
+    <a href="mailto:youremail@email.com" class="contact-link">Email Me</a>
+    <a href="https://instagram.com/yourusername" class="contact-link">Instagram</a>
+    <a href="#" class="contact-link">Other Link</a>
+  </div>
+</div>
+
+<!-- ==========================================
+     FOOTER
+     - Change "Your Name" and the year
+     ========================================== -->
+<footer>
+  <p>Made with ♥ by Your Name &nbsp;·&nbsp; 2026</p>
+</footer>
+
+</body>
+</html>
