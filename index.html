@@ -3,244 +3,577 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Portfolio</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#F6EEFF">
+<title>그림Caffeine — Illustrator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap" rel="stylesheet">
+
+<!-- =====================================================
+     SETTINGS — the only part you need to edit
+     1) adminEmail  : the Google email YOU sign in with
+     2) contactEmail: the email shown on your Contact button
+     3) firebase    : paste your Firebase config (see setup steps)
+     ===================================================== -->
+<script>
+window.SITE = {
+  adminEmail: "PASTE_YOUR_GOOGLE_EMAIL_HERE",
+  contactEmail: "youremail@email.com",
+  instagram: "https://www.instagram.com/iceand_coffee/",
+  firebase: {
+    apiKey: "PASTE_HERE",
+    authDomain: "PASTE_HERE",
+    projectId: "PASTE_HERE",
+    appId: "PASTE_HERE"
+  }
+};
+</script>
+
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --cream: #FAF7F2;
-    --ink: #1C1B18;
-    --muted: #7A7670;
-    --accent: #C6703A;
-    --light-border: #E5E0D8;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --sky: #5CC8FF;
+  --taupe: #93867F;
+  --charcoal: #343633;
+  --lavender: #7D70BA;
+  --mauve: #DEC1FF;
+  --paper: #FBF7FF;
+  --wash: #F3E8FF;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Gowun Dodum', sans-serif;
+  color: var(--charcoal);
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(125,112,186,.16) 1.2px, transparent 1.2px);
+  background-size: 26px 26px;
+  min-height: 100vh;
+}
+a { color: inherit; }
 
-  /* ── Navigation ── */
-  nav {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1.2rem 5vw; border-bottom: 1px solid var(--light-border);
-    position: sticky; top: 0; background: var(--cream); z-index: 100;
-  }
-  nav .logo { font-family: 'Playfair Display', serif; font-size: 1.3rem; letter-spacing: 0.02em; }
-  nav ul { list-style: none; display: flex; gap: 2rem; }
-  nav ul li a { text-decoration: none; color: var(--muted); font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
-  nav ul li a:hover { color: var(--accent); }
+/* ── Top bar ── */
+.bar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .9rem 5vw;
+  background: rgba(251,247,255,.82);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(125,112,186,.18);
+}
+.mark { font-family: 'Black Han Sans', sans-serif; font-size: 1.35rem; text-decoration: none; letter-spacing: .01em; }
+.mark b { color: var(--lavender); font-weight: 400; }
+.bar nav { display: flex; align-items: center; gap: 1.6rem; }
+.bar nav a { text-decoration: none; font-size: .9rem; color: var(--taupe); transition: color .2s; }
+.bar nav a:hover { color: var(--lavender); }
+.lock {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(125,112,186,.35);
+  background: transparent; color: var(--lavender); cursor: pointer;
+  display: grid; place-items: center; transition: all .2s;
+}
+.lock:hover { background: var(--lavender); color: #fff; }
+.lock svg { width: 16px; height: 16px; }
+body.admin .lock { background: var(--sky); border-color: var(--sky); color: var(--charcoal); }
 
-  /* ── Hero ── */
-  .hero {
-    display: grid; grid-template-columns: 1fr 1fr; min-height: 85vh;
-    padding: 5vw; gap: 4rem; align-items: center;
-  }
-  .hero-text h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.15; margin-bottom: 1.5rem; }
-  .hero-text h1 span { color: var(--accent); }
-  .hero-text p { font-size: 1.1rem; color: var(--muted); line-height: 1.8; max-width: 480px; margin-bottom: 2rem; }
-  .btn {
-    display: inline-block; padding: 0.9rem 2rem; background: var(--ink); color: var(--cream);
-    text-decoration: none; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase;
-    transition: background 0.2s; cursor: pointer;
-  }
-  .btn:hover { background: var(--accent); }
-  .btn-outline { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); margin-left: 1rem; }
-  .btn-outline:hover { background: var(--ink); color: var(--cream); }
+/* ── Hero (compact — the art is the star) ── */
+.hero { padding: clamp(2.2rem, 6vw, 4.5rem) 5vw 1.5rem; }
+.kicker { font-size: .78rem; letter-spacing: .28em; text-transform: uppercase; color: var(--lavender); margin-bottom: .6rem; }
+.hero h1 { font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: clamp(3.4rem, 12vw, 9rem); line-height: .95; letter-spacing: -.01em; }
+.hero h1 .en { color: var(--lavender); position: relative; display: inline-block; }
+.hero h1 .en svg { position: absolute; left: 0; bottom: -.12em; width: 100%; height: .22em; }
+.lede { margin-top: 1.4rem; color: var(--taupe); font-size: 1.05rem; max-width: 34ch; }
 
-  /* ── Photo placeholder ── */
-  .hero-image { position: relative; display: flex; align-items: center; justify-content: center; }
-  .photo-placeholder {
-    width: 100%; max-width: 420px; aspect-ratio: 4/5;
-    background: linear-gradient(135deg, #E8E2D8 0%, #D4CCBC 100%);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 1rem; color: var(--muted); font-size: 0.9rem; text-align: center;
-    border: 2px dashed var(--light-border); padding: 2rem;
-  }
-  .photo-placeholder .icon { font-size: 3rem; opacity: 0.4; }
-  .photo-placeholder strong { font-size: 1rem; color: var(--ink); }
+/* ── Gallery ── */
+.gallery { padding: 1.5rem 5vw 5rem; }
+.gal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.4rem; padding-bottom: .8rem; border-bottom: 2px solid var(--charcoal); }
+.gal-head h2 { font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: 1.5rem; }
+.gal-head span { font-size: .85rem; color: var(--taupe); }
 
-  /*
-    ── HOW TO ADD YOUR PHOTO ──
-    1. Save your photo in the same folder as this file, e.g. "myphoto.jpg"
-    2. Delete the <div class="photo-placeholder">...</div> section below
-    3. Replace it with: <img src="myphoto.jpg" alt="Your Name" style="width:100%;max-width:420px;aspect-ratio:4/5;object-fit:cover;">
-  */
+.grid { columns: 260px; column-gap: 1.2rem; }
 
-  /* ── Sections ── */
-  section { padding: 5rem 5vw; }
-  .section-label { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
-  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 1rem; }
+/* section tabs + headings */
+.tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2.2rem; }
+.tab {
+  border: 1.5px solid var(--charcoal); background: transparent; color: var(--charcoal);
+  font: inherit; font-size: .92rem; padding: .5rem 1.25rem; border-radius: 999px; cursor: pointer; transition: all .2s;
+}
+.tab:hover { background: var(--mauve); }
+.tab.on { background: var(--charcoal); color: #fff; }
+.tab small { opacity: .6; margin-left: .4rem; font-size: .75rem; }
+.sec { margin-bottom: 3.4rem; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.sec-head h3 { font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: clamp(1.5rem, 3.5vw, 2.1rem); line-height: 1; }
+.sec-head h3::after { content: ''; display: block; width: 42px; height: 5px; border-radius: 3px; margin-top: .5rem; background: var(--sky); }
+.sec[data-c="studio"] .sec-head h3::after { background: var(--lavender); }
+.sec[data-c="company"] .sec-head h3::after { background: var(--taupe); }
+.sec-head span { font-size: .85rem; color: var(--taupe); }
+.sec-empty { color: var(--taupe); font-size: .92rem; padding: 1.2rem 0; border: 1.5px dashed rgba(147,134,127,.5); border-radius: 12px; text-align: center; }
 
-  /* ── About ── */
-  .about { display: grid; grid-template-columns: 1fr 1.5fr; gap: 5rem; align-items: start; border-top: 1px solid var(--light-border); }
-  .about-body { color: var(--muted); line-height: 1.9; font-size: 1.05rem; }
-  .about-body p { margin-bottom: 1.2rem; }
-  .skills { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
-  .skill-tag { padding: 0.4rem 1rem; border: 1px solid var(--light-border); font-size: 0.85rem; color: var(--muted); }
+.tools select {
+  border: 0; border-radius: 999px; padding: .32rem .5rem; font: inherit; font-size: .75rem; cursor: pointer;
+  background: rgba(255,255,255,.94); color: var(--charcoal); box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.adminbar select {
+  border: 0; border-radius: 999px; padding: .55rem .9rem; font: inherit; font-size: .85rem; cursor: pointer;
+  background: rgba(255,255,255,.14); color: #fff;
+}
+.adminbar select option { color: var(--charcoal); }
+.tile {
+  break-inside: avoid; margin: 0 0 1.2rem; position: relative; overflow: hidden;
+  border-radius: 12px; background: #fff; cursor: zoom-in;
+  box-shadow: 0 8px 26px -12px rgba(52,54,51,.4);
+  opacity: 0; animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards;
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.tile:hover { transform: translateY(-5px) rotate(-.4deg); box-shadow: 0 18px 34px -14px rgba(125,112,186,.6); }
+.tile img { display: block; width: 100%; height: auto; }
+.tile .ph { width: 100%; display: grid; place-items: center; font-size: 2.4rem; color: rgba(255,255,255,.75); }
+.tile .cap {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 2.2rem 1rem .8rem;
+  background: linear-gradient(to top, rgba(52,54,51,.82), transparent);
+  color: #fff; font-size: .9rem; transform: translateY(100%); transition: transform .3s ease;
+}
+.tile .cap::before { content: ''; display: block; width: 26px; height: 3px; background: var(--sky); margin-bottom: .45rem; border-radius: 2px; }
+.tile:hover .cap { transform: translateY(0); }
+@media (hover: none) { .tile .cap { transform: none; } }
 
-  /* ── Work / Gallery ── */
-  .work { border-top: 1px solid var(--light-border); }
-  .work-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 3rem; }
-  .work-card { cursor: pointer; }
-  .work-card-img {
-    width: 100%; aspect-ratio: 4/3;
-    background: linear-gradient(135deg, #E8E2D8, #D4CCBC);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--muted); font-size: 0.85rem; text-align: center; padding: 1rem;
-    border: 2px dashed var(--light-border); margin-bottom: 1rem;
-    transition: transform 0.3s;
-  }
+.tools { position: absolute; top: .6rem; right: .6rem; display: none; gap: .4rem; z-index: 3; }
+body.admin .tools { display: flex; }
+.tools button {
+  border: 0; border-radius: 999px; padding: .35rem .75rem; font: inherit; font-size: .75rem; cursor: pointer;
+  background: rgba(255,255,255,.94); color: var(--charcoal); box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.tools button:hover { background: var(--sky); }
+.tools button.del:hover { background: #ff9aa8; }
 
-  /*
-    ── HOW TO ADD YOUR ARTWORK / DRAWINGS ──
-    1. Save your image in the same folder, e.g. "drawing1.jpg"
-    2. Replace the <div class="work-card-img">...</div> with:
-       <img src="drawing1.jpg" alt="My Drawing" style="width:100%;aspect-ratio:4/3;object-fit:cover;margin-bottom:1rem;">
-  */
+.empty { text-align: center; padding: 4rem 1rem; color: var(--taupe); }
+.empty strong { display: block; font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: 1.6rem; color: var(--charcoal); margin-bottom: .4rem; }
+.preview-note {
+  margin-bottom: 1.4rem; padding: .8rem 1rem; border-radius: 10px; font-size: .88rem;
+  background: var(--wash); border: 1px dashed var(--lavender); color: var(--lavender);
+}
 
-  .work-card:hover .work-card-img { transform: scale(0.98); }
-  .work-card h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.3rem; }
-  .work-card p { font-size: 0.85rem; color: var(--muted); }
+/* ── About ── */
+.about { background: var(--charcoal); color: #eee6f7; padding: 5rem 5vw; }
+.about-in { max-width: 1000px; display: grid; grid-template-columns: 1fr 1.4fr; gap: 3rem; }
+.about h2 { font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; color: var(--mauve); }
+.about p { line-height: 1.95; color: #c9c0d6; margin-bottom: 1rem; }
+.about p b { color: #fff; font-weight: 400; }
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.2rem; }
+.chips span { border: 1px solid rgba(222,193,255,.35); color: var(--mauve); padding: .3rem .9rem; font-size: .8rem; border-radius: 999px; }
 
-  /* ── Contact ── */
-  .contact { border-top: 1px solid var(--light-border); background: var(--ink); color: var(--cream); padding: 5rem 5vw; }
-  .contact .section-label { color: #C6703A; }
-  .contact .section-title { color: var(--cream); margin-bottom: 1rem; }
-  .contact p { color: #B0ABA3; max-width: 500px; margin-bottom: 2.5rem; line-height: 1.8; }
-  .contact-links { display: flex; gap: 1rem; flex-wrap: wrap; }
-  .contact-link {
-    padding: 0.9rem 1.8rem; border: 1px solid #444; color: var(--cream);
-    text-decoration: none; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase;
-    transition: all 0.2s;
-  }
-  .contact-link:hover { border-color: var(--accent); color: var(--accent); }
+/* ── Contact ── */
+.contact { padding: 5rem 5vw; background: var(--mauve); }
+.contact h2 { font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1; }
+.contact p { margin: 1rem 0 2rem; max-width: 46ch; color: #4a4560; line-height: 1.8; }
+.btns { display: flex; gap: .8rem; flex-wrap: wrap; }
+.btn {
+  display: inline-block; text-decoration: none; padding: .9rem 1.8rem; border-radius: 999px; font: inherit; font-size: .95rem; cursor: pointer; border: 0;
+  background: var(--charcoal); color: #fff; transition: all .25s;
+}
+.btn:hover { background: var(--lavender); transform: translateY(-2px); }
+.btn.ghost { background: transparent; border: 1.5px solid var(--charcoal); color: var(--charcoal); }
+.btn.ghost:hover { background: var(--charcoal); color: #fff; }
 
-  /* ── Footer ── */
-  footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--light-border); background: var(--cream); }
+footer { padding: 1.4rem 5vw; font-size: .8rem; color: var(--taupe); display: flex; justify-content: space-between; background: var(--paper); }
 
-  /* ── Responsive ── */
-  @media (max-width: 700px) {
-    .hero { grid-template-columns: 1fr; min-height: auto; gap: 2rem; }
-    .about { grid-template-columns: 1fr; gap: 2rem; }
-    nav ul { gap: 1rem; }
-    .hero-text h1 { font-size: 2rem; }
-  }
+/* ── Admin bar ── */
+.adminbar {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); z-index: 80;
+  display: none; align-items: center; gap: .8rem; padding: .6rem .7rem .6rem 1.1rem;
+  background: var(--charcoal); color: #fff; border-radius: 999px; box-shadow: 0 12px 34px rgba(0,0,0,.35);
+  font-size: .85rem; max-width: 94vw;
+}
+body.admin .adminbar { display: flex; }
+.adminbar .who { color: var(--mauve); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30vw; }
+.adminbar label, .adminbar button {
+  border: 0; border-radius: 999px; padding: .55rem 1.1rem; font: inherit; font-size: .85rem; cursor: pointer; white-space: nowrap;
+}
+.adminbar label { background: var(--sky); color: var(--charcoal); }
+.adminbar label:hover { background: var(--mauve); }
+.adminbar button { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3); }
+.adminbar button:hover { background: rgba(255,255,255,.12); }
+.adminbar input { display: none; }
+
+/* ── Lightbox ── */
+.lb { position: fixed; inset: 0; z-index: 100; background: rgba(30,28,38,.94); display: none; align-items: center; justify-content: center; padding: 3.5rem 1rem; }
+.lb.on { display: flex; }
+.lb img { max-width: min(1100px, 100%); max-height: 100%; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.lb .t { position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; color: var(--mauve); font-size: .95rem; }
+.lb button { position: absolute; background: rgba(255,255,255,.1); color: #fff; border: 0; width: 46px; height: 46px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; }
+.lb button:hover { background: var(--lavender); }
+.lb .x { top: 1rem; right: 1rem; }
+.lb .p { left: 1rem; top: 50%; transform: translateY(-50%); }
+.lb .n { right: 1rem; top: 50%; transform: translateY(-50%); }
+
+/* ── Setup dialog + toast ── */
+dialog { margin: auto; border: 0; border-radius: 16px; padding: 1.8rem; max-width: min(460px, 92vw); background: var(--paper); color: var(--charcoal); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+dialog::backdrop { background: rgba(52,54,51,.55); }
+dialog h3 { font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: 1.4rem; margin-bottom: .6rem; }
+dialog p { line-height: 1.7; color: #5a5566; margin-bottom: 1.2rem; font-size: .95rem; }
+.toast {
+  position: fixed; top: 4.6rem; left: 50%; transform: translate(-50%,-20px); opacity: 0; pointer-events: none; z-index: 120;
+  background: var(--charcoal); color: #fff; padding: .7rem 1.3rem; border-radius: 999px; font-size: .88rem; transition: all .3s;
+}
+.toast.on { opacity: 1; transform: translate(-50%,0); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 760px) {
+  .about-in { grid-template-columns: 1fr; gap: 1.5rem; }
+  .bar nav { gap: 1rem; }
+  footer { flex-direction: column; gap: .3rem; text-align: center; }
+  .adminbar .who { display: none; }
+}
 </style>
 </head>
 <body>
 
-<!-- ==========================================
-     NAVIGATION
-     Change "Your Name" to your real name
-     ========================================== -->
-<nav>
-  <div class="logo">Your Name</div>
-  <ul>
-    <li><a href="#about">About</a></li>
-    <li><a href="#work">Work</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-</nav>
-
-<!-- ==========================================
-     HERO SECTION
-     - Change "Your Name" in the h1
-     - Change the tagline (artist & creator)
-     - Change the paragraph to describe yourself
-     - Replace the photo placeholder with your image (see comment above in CSS)
-     ========================================== -->
-<section class="hero">
-  <div class="hero-text">
-    <p class="section-label">Portfolio</p>
-    <h1>Hello, I'm <span>Your Name</span> — artist &amp; creator.</h1>
-    <p>Welcome to my little corner of the internet. Here you'll find my artwork, projects, and the things I love to make.</p>
-    <a href="#work" class="btn">See My Work</a>
-    <a href="#contact" class="btn btn-outline">Say Hello</a>
-  </div>
-  <div class="hero-image">
-    <div class="photo-placeholder">
-      <div class="icon">📷</div>
-      <strong>Your Photo Here</strong>
-      <span>Replace this with your image (see instructions in the code)</span>
-    </div>
-  </div>
-</section>
-
-<!-- ==========================================
-     ABOUT SECTION
-     - Change the paragraph text to tell your story
-     - Update or add/remove skill tags
-     ========================================== -->
-<section id="about" class="about">
-  <div>
-    <p class="section-label">About Me</p>
-    <h2 class="section-title">A little bit about who I am.</h2>
-  </div>
-  <div class="about-body">
-    <p>Hi there! I'm [Your Name], and I'm passionate about [your interests — art, design, photography, writing, etc.]. This is your space to introduce yourself in your own words!</p>
-    <p>Tell people where you're from, what you love to do, what inspires you. This is your story.</p>
-    <div class="skills">
-      <span class="skill-tag">Drawing</span>
-      <span class="skill-tag">Painting</span>
-      <span class="skill-tag">Photography</span>
-      <span class="skill-tag">Add your skill</span>
-    </div>
-  </div>
-</section>
-
-<!-- ==========================================
-     WORK / GALLERY SECTION
-     - Change each project title and description
-     - Replace the placeholder divs with your images (see instructions in CSS)
-     - Add or remove cards as needed
-     ========================================== -->
-<section id="work" class="work">
-  <p class="section-label">My Work</p>
-  <h2 class="section-title">Things I've created.</h2>
-  <div class="work-grid">
-
-    <div class="work-card">
-      <div class="work-card-img">🖼️<br><br>Add your artwork or drawing here</div>
-      <h3>Project Title</h3>
-      <p>A short description of this piece</p>
-    </div>
-
-    <div class="work-card">
-      <div class="work-card-img">🎨<br><br>Add another image here</div>
-      <h3>Project Title</h3>
-      <p>A short description of this piece</p>
-    </div>
-
-    <div class="work-card">
-      <div class="work-card-img">✏️<br><br>Add another image here</div>
-      <h3>Project Title</h3>
-      <p>A short description of this piece</p>
-    </div>
-
-  </div>
-</section>
-
-<!-- ==========================================
-     CONTACT SECTION
-     - Change the email address in the href (mailto:youremail@email.com)
-     - Change the button text if you like
-     - Add your Instagram / social links
-     ========================================== -->
-<div id="contact" class="contact">
-  <p class="section-label">Contact</p>
-  <h2 class="section-title">Let's connect.</h2>
-  <p>I'd love to hear from you! Whether you want to collaborate, commission something, or just say hello — reach out.</p>
-  <div class="contact-links">
-    <a href="mailto:youremail@email.com" class="contact-link">Email Me</a>
-    <a href="https://instagram.com/yourusername" class="contact-link">Instagram</a>
-    <a href="#" class="contact-link">Other Link</a>
-  </div>
+<!-- TOP BAR -->
+<div class="bar">
+  <a class="mark" href="#top">그림<b>Caffeine</b></a>
+  <nav>
+    <a href="#gallery">Gallery</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <button class="lock" id="lockBtn" title="Admin" aria-label="Admin login">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </button>
+  </nav>
 </div>
 
-<!-- ==========================================
-     FOOTER
-     - Change "Your Name" and the year
-     ========================================== -->
-<footer>
-  <p>Made with ♥ by Your Name &nbsp;·&nbsp; 2026</p>
-</footer>
+<!-- HERO -->
+<header class="hero" id="top">
+  <p class="kicker">Illustrator</p>
+  <h1>그림<span class="en">Caffeine<svg viewBox="0 0 300 20" preserveAspectRatio="none"><path d="M2 12 Q 20 2 38 12 T 74 12 T 110 12 T 146 12 T 182 12 T 218 12 T 254 12 T 298 12" fill="none" stroke="#5CC8FF" stroke-width="6" stroke-linecap="round"/></svg></span></h1>
+  <p class="lede">A gallery of my illustrations.</p>
+</header>
 
+<!-- GALLERY (main page) -->
+<main class="gallery" id="gallery">
+  <div class="gal-head"><h2>Gallery</h2><span id="count"></span></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="note"></div>
+  <div id="sections"></div>
+  <div class="empty" id="empty" hidden><strong>Coming soon</strong>New artwork is on the way.</div>
+</main>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-in">
+    <h2>Hi, I'm<br>그림Caffeine.</h2>
+    <div>
+      <p>I'm an <b>illustrator</b> born in <b>Seoul, South Korea</b>. I moved to America in 2009, and I'm fluent in both <b>English and Korean</b>.</p>
+      <p>Drawing is where everything starts for me. I also worked as an <b>Intern Designer at WaBa Grill</b>, where I made a wide range of projects, mostly window clings.</p>
+      <div class="chips"><span>Illustration</span><span>Drawing</span><span>Graphic Design</span><span>Window Clings</span><span>한국어</span><span>English</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <h2>Let's make<br>something.</h2>
+  <p>Want to collaborate, commission a piece, or just say hi? Reach out.</p>
+  <div class="btns">
+    <a class="btn" id="mailBtn" href="#">Email me</a>
+    <a class="btn ghost" id="igBtn" href="#" target="_blank" rel="noopener">@iceand_coffee</a>
+  </div>
+</section>
+
+<footer><span>© 2026 그림Caffeine</span><span>Illustrator</span></footer>
+
+<!-- ADMIN BAR (only visible after admin login) -->
+<div class="adminbar">
+  <span class="who" id="who"></span>
+  <select id="catSel" aria-label="Upload to section"></select>
+  <label>+ Add artwork<input type="file" id="file" accept="image/*" multiple></label>
+  <button id="outBtn">Sign out</button>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb">
+  <button class="x" id="lbX" aria-label="Close">✕</button>
+  <button class="p" id="lbP" aria-label="Previous">‹</button>
+  <img id="lbImg" alt="">
+  <button class="n" id="lbN" aria-label="Next">›</button>
+  <div class="t" id="lbT"></div>
+</div>
+
+<dialog id="setup">
+  <h3>Admin login isn't connected yet</h3>
+  <p>The site is running in preview mode. Once Firebase is connected in the SETTINGS block at the top of this file, this lock button will let only you sign in and add photos.</p>
+  <button class="btn" id="setupOk">Got it</button>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const S = window.SITE;
+const $ = id => document.getElementById(id);
+const configured = !!S.firebase.apiKey && !S.firebase.apiKey.startsWith("PASTE");
+
+// contact buttons
+$("mailBtn").href = "mailto:" + S.contactEmail;
+$("igBtn").href = S.instagram;
+
+// toast
+let tt;
+function toast(msg, sticky) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(tt); if (!sticky) tt = setTimeout(() => t.classList.remove("on"), 2600);
+}
+
+// ── data ──
+const CATS = [
+  { id: "digital", name: "Digital Art" },
+  { id: "studio", name: "Studio Art" },
+  { id: "company", name: "Company Work" }
+];
+const catOf = it => (CATS.some(c => c.id === it.category) ? it.category : "digital");
+let filter = "all";
+let visible = [];
+
+let items = [];
+let isAdmin = false;
+let auth, db;
+
+const demo = [
+  ["4/5", "linear-gradient(135deg,#7D70BA,#DEC1FF)"],
+  ["1/1", "linear-gradient(135deg,#5CC8FF,#7D70BA)"],
+  ["3/4", "linear-gradient(135deg,#DEC1FF,#93867F)"],
+  ["5/4", "linear-gradient(135deg,#343633,#7D70BA)"],
+  ["4/5", "linear-gradient(135deg,#93867F,#5CC8FF)"],
+  ["1/1", "linear-gradient(135deg,#DEC1FF,#5CC8FF)"],
+  ["3/4", "linear-gradient(135deg,#7D70BA,#343633)"],
+  ["4/5", "linear-gradient(135deg,#5CC8FF,#DEC1FF)"]
+].map((d, i) => ({ demo: true, title: "Sample " + (i + 1), ratio: d[0], grad: d[1], category: CATS[i % 3].id }));
+
+// ── render ──
+function tileEl(it, idx, delayN) {
+  const fig = document.createElement("figure");
+  fig.className = "tile";
+  fig.style.animationDelay = Math.min(delayN, 12) * 60 + "ms";
+
+  if (it.src) {
+    const img = new Image();
+    img.src = it.src; img.alt = it.title || "Artwork"; img.loading = "lazy";
+    if (it.w && it.h) { img.width = it.w; img.height = it.h; }
+    fig.append(img);
+  } else {
+    const ph = document.createElement("div");
+    ph.className = "ph"; ph.style.aspectRatio = it.ratio; ph.style.background = it.grad; ph.textContent = "✦";
+    fig.append(ph);
+  }
+
+  const cap = document.createElement("figcaption");
+  cap.className = "cap"; cap.textContent = it.title || "";
+  fig.append(cap);
+
+  if (it.id) {
+    const tools = document.createElement("div");
+    tools.className = "tools";
+
+    const sel = document.createElement("select");
+    CATS.forEach(c => sel.add(new Option(c.name, c.id)));
+    sel.value = catOf(it);
+    sel.onclick = e => e.stopPropagation();
+    sel.onchange = async () => {
+      try {
+        await updateDoc(doc(db, "artworks", it.id), { category: sel.value });
+        toast("Moved to " + CATS.find(c => c.id === sel.value).name);
+      } catch (err) { console.error(err); toast("Could not move"); }
+    };
+
+    const ren = document.createElement("button"); ren.textContent = "Rename";
+    const del = document.createElement("button"); del.textContent = "Delete"; del.className = "del";
+    ren.onclick = async e => {
+      e.stopPropagation();
+      const v = prompt("Title for this artwork:", it.title || "");
+      if (v === null) return;
+      try { await updateDoc(doc(db, "artworks", it.id), { title: v.trim() }); } catch (err) { console.error(err); toast("Could not rename"); }
+    };
+    del.onclick = async e => {
+      e.stopPropagation();
+      if (!confirm("Delete this artwork from your site?")) return;
+      try { await deleteDoc(doc(db, "artworks", it.id)); toast("Deleted"); } catch (err) { console.error(err); toast("Could not delete"); }
+    };
+    tools.append(sel, ren, del);
+    fig.append(tools);
+  }
+
+  fig.onclick = () => { if (it.src) openLB(idx); };
+  return fig;
+}
+
+function render() {
+  const all = configured ? items : demo;
+  const wrap = $("sections");
+  wrap.innerHTML = "";
+
+  // preview note
+  $("note").innerHTML = "";
+  if (!configured) {
+    const n = document.createElement("div");
+    n.className = "preview-note";
+    n.textContent = "Preview mode: these are sample tiles. Connect Firebase (see setup steps) and your real artwork will appear here.";
+    $("note").append(n);
+  }
+
+  // tabs
+  const tabs = $("tabs");
+  tabs.innerHTML = "";
+  const mk = (id, label, n) => {
+    const b = document.createElement("button");
+    b.className = "tab" + (filter === id ? " on" : "");
+    b.textContent = label;
+    const sm = document.createElement("small"); sm.textContent = n; b.append(sm);
+    b.onclick = () => { filter = id; render(); };
+    tabs.append(b);
+  };
+  mk("all", "All", all.length);
+  CATS.forEach(c => mk(c.id, c.name, all.filter(x => catOf(x) === c.id).length));
+
+  $("count").textContent = configured ? (all.length + (all.length === 1 ? " piece" : " pieces")) : "sample layout";
+  $("empty").hidden = !(configured && all.length === 0);
+
+  // sections
+  visible = [];
+  let n = 0;
+  const cats = filter === "all" ? CATS : CATS.filter(c => c.id === filter);
+  cats.forEach(c => {
+    const list = all.filter(x => catOf(x) === c.id);
+    if (filter === "all" && list.length === 0 && !isAdmin) return; // visitors don't see empty sections
+
+    const sec = document.createElement("section");
+    sec.className = "sec"; sec.dataset.c = c.id;
+
+    const head = document.createElement("div"); head.className = "sec-head";
+    const h3 = document.createElement("h3"); h3.textContent = c.name;
+    const sp = document.createElement("span"); sp.textContent = list.length + (list.length === 1 ? " piece" : " pieces");
+    head.append(h3, sp);
+    sec.append(head);
+
+    if (list.length === 0) {
+      const e = document.createElement("div");
+      e.className = "sec-empty"; e.textContent = "Nothing here yet.";
+      sec.append(e);
+    } else {
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      list.forEach(it => {
+        const idx = visible.push(it) - 1;
+        grid.append(tileEl(it, idx, n++));
+      });
+      sec.append(grid);
+    }
+    wrap.append(sec);
+  });
+}
+
+// ── lightbox ──
+let cur = 0;
+function openLB(i) { cur = i; showLB(); $("lb").classList.add("on"); }
+function showLB() {
+  const it = visible[cur]; if (!it) return;
+  $("lbImg").src = it.src; $("lbImg").alt = it.title || "";
+  $("lbT").textContent = it.title || "";
+}
+function step(d) { if (!visible.length) return; cur = (cur + d + visible.length) % visible.length; showLB(); }
+$("lbX").onclick = () => $("lb").classList.remove("on");
+$("lbP").onclick = () => step(-1);
+$("lbN").onclick = () => step(1);
+$("lb").onclick = e => { if (e.target.id === "lb") $("lb").classList.remove("on"); };
+document.addEventListener("keydown", e => {
+  if (!$("lb").classList.contains("on")) return;
+  if (e.key === "Escape") $("lb").classList.remove("on");
+  if (e.key === "ArrowLeft") step(-1);
+  if (e.key === "ArrowRight") step(1);
+});
+
+// ── image compression (keeps each photo small enough to store) ──
+async function compress(file) {
+  const bmp = await createImageBitmap(file);
+  for (const max of [1500, 1200, 900, 700]) {
+    const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    for (let q = 0.86; q >= 0.5; q -= 0.09) {
+      const url = c.toDataURL("image/jpeg", q);
+      if (url.length < 900000) return { url, w, h };
+    }
+  }
+  throw new Error("too large");
+}
+
+// ── admin UI ──
+function setAdmin(on, email) {
+  isAdmin = on;
+  document.body.classList.toggle("admin", on);
+  $("who").textContent = on ? email : "";
+  render();
+}
+
+$("lockBtn").onclick = async () => {
+  if (!configured) { $("setup").showModal(); return; }
+  if (isAdmin) { toast("You're signed in as admin"); return; }
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (err) { console.error(err); if (err.code !== "auth/popup-closed-by-user") toast("Sign-in didn't work. Check the setup steps."); }
+};
+$("outBtn").onclick = () => { if (auth) signOut(auth); };
+$("setupOk").onclick = () => $("setup").close();
+
+$("file").addEventListener("change", async e => {
+  const files = [...e.target.files];
+  let n = 0;
+  for (const f of files) {
+    try {
+      toast("Uploading " + (++n) + " of " + files.length + "…", true);
+      const { url, w, h } = await compress(f);
+      await addDoc(collection(db, "artworks"), {
+        title: f.name.replace(/\.[^.]+$/, ""), category: $("catSel").value, src: url, w, h, createdAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error(err);
+      toast("Could not upload " + f.name);
+      await new Promise(r => setTimeout(r, 1800));
+    }
+  }
+  toast("Done ✓");
+  e.target.value = "";
+});
+
+// ── start ──
+CATS.forEach(c => $("catSel").add(new Option("Upload to: " + c.name, c.id)));
+render();
+
+if (configured) {
+  try {
+    const app = initializeApp(S.firebase);
+    auth = getAuth(app);
+    db = getFirestore(app);
+
+    onSnapshot(
+      query(collection(db, "artworks"), orderBy("createdAt", "desc")),
+      snap => { items = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
+      err => { console.error(err); toast("Could not load the gallery"); }
+    );
+
+    onAuthStateChanged(auth, user => {
+      const ok = !!user && (user.email || "").toLowerCase() === S.adminEmail.toLowerCase();
+      if (user && !ok) { toast("That account isn't the site admin."); signOut(auth); }
+      setAdmin(ok, user && user.email);
+    });
+  } catch (err) {
+    console.error(err);
+    toast("Firebase setup problem. Check your SETTINGS.");
+  }
+}
+</script>
 </body>
 </html>
