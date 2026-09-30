@@ -19,7 +19,8 @@
 window.SITE = {
   adminEmail: "jsyang1231@gmail.com",
   contactEmail: "jsyang1231@gmail.com",
-  instagram: "https://www.instagram.com/iceand_coffee/",
+  instagram: "https://www.instagram.com/geurim_caffeine/",
+  x: "https://x.com/GeurimCaffeine",
   firebase: {
     apiKey: "AIzaSyAk-nH6Mi2yVZI1CePfSCgvahLOFJ-SAhc",
     authDomain: "geurim-caffeine.firebaseapp.com",
@@ -164,6 +165,12 @@ body.admin .tools { display: flex; }
 .contact { padding: 7rem var(--pad); background: var(--mat); }
 .contact h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(2.2rem, 5.5vw, 3.8rem); line-height: 1.1; }
 .contact p { margin: 1.2rem 0 2.4rem; max-width: 44ch; color: var(--taupe); line-height: 1.9; }
+.mail {
+  display: inline-block; margin-bottom: 2.2rem; font-family: var(--serif); font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+  text-decoration: none; color: var(--charcoal); border-bottom: 1px solid rgba(52,54,51,.3); padding-bottom: .15rem;
+  transition: color .2s, border-color .2s; word-break: break-all;
+}
+.mail:hover { color: var(--lavender); border-color: var(--lavender); }
 .btns { display: flex; gap: 1rem; flex-wrap: wrap; }
 .btn {
   display: inline-block; text-decoration: none; padding: .85rem 1.9rem; font: inherit; font-size: .82rem; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
@@ -286,9 +293,10 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
   <p class="label">Contact</p>
   <h2>Let's make<br>something.</h2>
   <p>Want to collaborate, commission a piece, or just say hi? Reach out.</p>
+  <a class="mail" id="mailBtn" href="#"></a>
   <div class="btns">
-    <a class="btn" id="mailBtn" href="#">Email me</a>
-    <a class="btn ghost" id="igBtn" href="#" target="_blank" rel="noopener">@iceand_coffee</a>
+    <a class="btn ghost" id="igBtn" href="#" target="_blank" rel="noopener">Instagram · @geurim_caffeine</a>
+    <a class="btn ghost" id="xBtn" href="#" target="_blank" rel="noopener">X · @GeurimCaffeine</a>
   </div>
 </section>
 
@@ -330,7 +338,9 @@ const configured = !!S.firebase.apiKey && !S.firebase.apiKey.startsWith("PASTE")
 
 // contact buttons
 $("mailBtn").href = "mailto:" + S.contactEmail;
+$("mailBtn").textContent = S.contactEmail;
 $("igBtn").href = S.instagram;
+$("xBtn").href = S.x;
 
 // toast
 let tt;
