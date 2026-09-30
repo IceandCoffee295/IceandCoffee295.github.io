@@ -309,8 +309,8 @@ body.admin .adminbar { display: flex; }
 .lb-stage.zoomed { cursor: grab; }
 .lb-stage.dragging { cursor: grabbing; }
 .lb-stage img {
-  max-width: 100%; max-height: 100%; display: block; user-select: none; -webkit-user-drag: none;
-  transform-origin: center center; box-shadow: 0 20px 60px -20px rgba(0,0,0,.4); will-change: transform;
+  max-width: none; max-height: none; flex: none; display: block; user-select: none; -webkit-user-drag: none;
+  transform-origin: center center; box-shadow: 0 20px 60px -20px rgba(0,0,0,.4); image-rendering: auto;
 }
 .lb-stage img.anim { transition: transform .25s ease; }
 .lb .zoombar {
@@ -321,6 +321,8 @@ body.admin .adminbar { display: flex; }
 .lb .zoombar button { position: static; width: 36px; height: 34px; font-size: 1.15rem; opacity: .75; border-radius: 4px; }
 .lb .zoombar button:hover { background: var(--mat); opacity: 1; }
 .lb .zoombar .fit { width: auto; padding: 0 .7rem; font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; }
+.lb .zoombar .hd { min-width: 0; padding: 0 .5rem 0 .2rem; font-size: .66rem; letter-spacing: .12em; color: var(--sky); }
+.lb .zoombar .hd:empty { display: none; }
 .lb .zoombar span { min-width: 3.4rem; text-align: center; font-size: .78rem; color: var(--taupe); font-variant-numeric: tabular-nums; }
 
 /* crop editor (admin) */
@@ -462,6 +464,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
     <span id="zLbl">100%</span>
     <button id="zIn" aria-label="Zoom in">+</button>
     <button class="fit" id="zFit" aria-label="Fit to screen">Fit</button>
+    <span class="hd" id="hdLbl"></span>
   </div>
   <div class="t" id="lbT"></div>
 </div>
@@ -489,7 +492,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, setDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const S = window.SITE;
 const $ = id => document.getElementById(id);
@@ -594,13 +597,29 @@ function tileEl(it, idx, delayN) {
     del.onclick = async e => {
       e.stopPropagation();
       if (!confirm("Delete this artwork from your site?")) return;
-      try { await deleteDoc(doc(db, "artworks", it.id)); toast("Deleted"); } catch (err) { console.error(err); toast("Could not delete"); }
+      try { await deleteChunks(it.id).catch(() => {}); await deleteDoc(doc(db, "artworks", it.id)); toast("Deleted"); } catch (err) { console.error(err); toast("Could not delete"); }
     };
     const crp = document.createElement("button"); crp.textContent = "Crop";
     crp.onclick = e => { e.stopPropagation(); openCrop(it); };
     const grip = document.createElement("button"); grip.textContent = "⠿ Move"; grip.className = "grip"; grip.title = "Drag to reorder";
     grip.onclick = e => e.stopPropagation();
-    tools.append(grip, sel, crp, ren);
+    const rep = document.createElement("button"); rep.textContent = it.full ? "Replace" : "Upload HD";
+    rep.title = "Replace this image with a new or full-quality file (keeps title, crop, section and group)";
+    rep.onclick = e => {
+      e.stopPropagation();
+      const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+      inp.onchange = async () => {
+        const f = inp.files[0]; if (!f) return;
+        try {
+          toast("Uploading full quality…", true);
+          const img = await storeImage(f, it.id);
+          await updateDoc(doc(db, "artworks", it.id), img);
+          hdCache.delete(it.id); toast("Image updated in full quality ✓");
+        } catch (err) { console.error(err); toast("Could not upload that file"); }
+      };
+      inp.click();
+    };
+    tools.append(grip, sel, crp, ren, rep);
     if (it.group) {
       const ug = document.createElement("button"); ug.textContent = "Ungroup";
       ug.onclick = async e => {
@@ -1064,18 +1083,41 @@ function zoomTo(s, cx = 0, cy = 0, anim = true) {
 function stagePoint(e) { const r = stage.getBoundingClientRect(); return [e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2]; }
 function resetZ() { Z.s = 1; Z.tx = 0; Z.ty = 0; applyZ(false); }
 
-function openLB(i) { cur = i; showLB(); $("lb").classList.add("on"); document.body.style.overflow = "hidden"; }
+function openLB(i) { cur = i; $("lb").classList.add("on"); document.body.style.overflow = "hidden"; showLB(); }
 function closeLB() { $("lb").classList.remove("on"); document.body.style.overflow = ""; }
 function showLB() {
   const it = visible[cur]; if (!it) return;
   resetZ();
+  lbAR = (it.full && it.full.w) ? it.full.w / it.full.h : (it.w && it.h) ? it.w / it.h : 0;
+  fitLB();
+  lbImg.onload = () => { if (!lbAR) { lbAR = lbImg.naturalWidth / lbImg.naturalHeight; fitLB(); } };
   lbImg.src = it.src; lbImg.alt = it.title || "";
+  $("hdLbl").textContent = "";
+  if (it.full && it.id) {
+    $("hdLbl").textContent = "Loading HD…";
+    const want = it;
+    loadFull(it).then(u => {
+      if (visible[cur] !== want) return;
+      const pre = new Image();
+      pre.onload = () => { if (visible[cur] === want) { lbImg.src = u; $("hdLbl").textContent = "HD"; } };
+      pre.src = u;
+    }).catch(err => { console.error(err); if (visible[cur] === want) $("hdLbl").textContent = ""; });
+  }
   let cap = it.title || "";
   if (it.group && !isAdmin) {
     const g = visible.filter(x => x.group === it.group);
     if (g.length > 1) cap = (it.groupName || "Group") + "  ·  " + (g.indexOf(it) + 1) + " / " + g.length + (it.title ? "  ·  " + it.title : "");
   }
   $("lbT").textContent = cap;
+}
+// size the image to fit the screen (same size for the preview and the HD file, so the swap doesn't jump)
+let lbAR = 0;
+function fitLB() {
+  if (!lbAR) { lbImg.style.width = lbImg.style.height = ""; return; }
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  let w = sw, h = sw / lbAR;
+  if (h > sh) { h = sh; w = sh * lbAR; }
+  lbImg.style.width = Math.round(w) + "px"; lbImg.style.height = Math.round(h) + "px";
 }
 function step(d) { if (!visible.length) return; cur = (cur + d + visible.length) % visible.length; showLB(); }
 $("lbX").onclick = closeLB;
@@ -1132,7 +1174,7 @@ function ptrEnd(e) {
 }
 stage.addEventListener("pointerup", ptrEnd);
 stage.addEventListener("pointercancel", ptrEnd);
-window.addEventListener("resize", () => { if ($("lb").classList.contains("on")) { clampPan(); applyZ(false); } });
+window.addEventListener("resize", () => { if ($("lb").classList.contains("on")) { fitLB(); clampPan(); applyZ(false); } });
 
 document.addEventListener("keydown", e => {
   if (!$("lb").classList.contains("on")) return;
@@ -1145,9 +1187,66 @@ document.addEventListener("keydown", e => {
 });
 
 // ── image compression (keeps each photo small enough to store) ──
+// Full-resolution originals are stored in pieces ("chunks") under artworks/{id}/chunks,
+// because one database entry can only hold ~1 MB. The gallery uses a lighter display copy.
+const CHUNK = 900000;
+async function fullRes(file) {
+  const bmp = await createImageBitmap(file);
+  const W = bmp.width, H = bmp.height;
+  const readURL = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(f); });
+  // keep the original file untouched when it's a normal size
+  if (/^image\/(jpeg|png|webp)$/.test(file.type) && file.size <= 7 * 1024 * 1024 && Math.max(W, H) <= 6000) {
+    return { url: await readURL(file), w: W, h: H };
+  }
+  // otherwise re-save at very high quality
+  for (const max of [5000, 4096, 3500]) {
+    const s = Math.min(1, max / Math.max(W, H));
+    const w = Math.round(W * s), h = Math.round(H * s);
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    ctx.imageSmoothingQuality = "high"; ctx.drawImage(bmp, 0, 0, w, h);
+    for (const q of [0.95, 0.92, 0.9]) {
+      const url = c.toDataURL("image/jpeg", q);
+      if (url.length < 9.5 * 1024 * 1024) return { url, w, h };
+    }
+  }
+  throw new Error("too large");
+}
+async function saveChunks(id, url) {
+  const parts = [];
+  for (let i = 0; i < url.length; i += CHUNK) parts.push(url.slice(i, i + CHUNK));
+  for (let i = 0; i < parts.length; i++) {
+    await setDoc(doc(db, "artworks", id, "chunks", String(i).padStart(3, "0")), { d: parts[i] });
+  }
+  return parts.length;
+}
+async function deleteChunks(id) {
+  const snap = await getDocs(collection(db, "artworks", id, "chunks"));
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+}
+const hdCache = new Map();
+async function loadFull(it) {
+  if (hdCache.has(it.id)) return hdCache.get(it.id);
+  const p = (async () => {
+    const snap = await getDocs(query(collection(db, "artworks", it.id, "chunks"), orderBy("__name__")));
+    const url = snap.docs.map(d => d.data().d).join("");
+    const blob = await (await fetch(url)).blob();
+    return URL.createObjectURL(blob);
+  })();
+  hdCache.set(it.id, p);
+  p.catch(() => hdCache.delete(it.id));
+  return p;
+}
+async function storeImage(file, id) {
+  const [disp, full] = await Promise.all([compress(file), fullRes(file)]);
+  await deleteChunks(id).catch(() => {});
+  const n = await saveChunks(id, full.url);
+  return { src: disp.url, w: disp.w, h: disp.h, full: { n, w: full.w, h: full.h } };
+}
+
 async function compress(file) {
   const bmp = await createImageBitmap(file);
-  for (const max of [2200, 1800, 1500, 1200, 900, 700]) {
+  for (const max of [1600, 1400, 1200, 900, 700]) {
     const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
     const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
     const c = document.createElement("canvas"); c.width = w; c.height = h;
@@ -1186,10 +1285,12 @@ $("file").addEventListener("change", async e => {
   let n = 0;
   for (const f of files) {
     try {
-      toast("Uploading " + (++n) + " of " + files.length + "…", true);
-      const { url, w, h } = await compress(f);
-      await addDoc(collection(db, "artworks"), {
-        title: f.name.replace(/\.[^.]+$/, ""), category: $("catSel").value, src: url, w, h, order: -Math.floor(Date.now() / 1000), createdAt: serverTimestamp()
+      toast("Uploading " + (++n) + " of " + files.length + " (full quality)…", true);
+      const ref = doc(collection(db, "artworks"));
+      const img = await storeImage(f, ref.id);
+      await setDoc(ref, {
+        title: f.name.replace(/\.[^.]+$/, ""), category: $("catSel").value, ...img,
+        order: -Math.floor(Date.now() / 1000), createdAt: serverTimestamp()
       });
     } catch (err) {
       console.error(err);
