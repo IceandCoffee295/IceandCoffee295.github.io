@@ -123,7 +123,7 @@ body.admin .lock { background: var(--sky); border-color: var(--sky); color: var(
 .sec-empty { color: var(--taupe); font-size: .88rem; padding: 3rem 0; background: var(--mat); text-align: center; }
 
 .grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
   gap: 3.2rem 2.2rem;
 }
 
@@ -363,7 +363,10 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
   .bar nav { gap: .9rem; }
   .bar nav a { font-size: .66rem; letter-spacing: .08em; }
   .mark { font-size: 1rem; }
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 2.2rem 1rem; }
+}
+@media (max-width: 540px) {
+  .grid { grid-template-columns: 1fr; gap: 2.6rem; }
   .tile .cap em { display: none; }
   .about-in { grid-template-columns: 1fr; gap: 1.5rem; }
   .about, .contact { padding: 5rem var(--pad); }
@@ -783,7 +786,7 @@ function openSpread(fig, members, idxs) {
   const tr = fig.querySelector(".deck").getBoundingClientRect();
   const vw = window.innerWidth, vh = window.innerHeight, n = members.length;
   const pad = 16, gap = 12, head = 34;
-  let tw = Math.max(96, Math.min(170, tr.width * .62));
+  let tw = Math.max(96, Math.min(220, tr.width * .6));
   let cols = Math.max(1, Math.min(n, 5, Math.floor((vw - 2 * pad - 16 + gap) / (tw + gap))));
   if (cols < n && n <= 6 && vw > 700) cols = Math.min(n, Math.floor((vw - 48) / (tw + gap)));
   let rows = Math.ceil(n / cols);
