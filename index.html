@@ -249,6 +249,10 @@ body.admin .admin-hint { display: block; }
 .tools button:hover { border-color: var(--ink); }
 .tools button.del:hover { background: rgba(217,84,106,.2); border-color: #e0697f; color: #ffb3c0; }
 
+.empty.loading { display: flex; align-items: center; justify-content: center; gap: .8rem; }
+.empty.loading[hidden] { display: none; }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--mauve); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .empty { text-align: center; padding: 6rem 1rem; color: var(--taupe); }
 .empty strong { display: block; font-family: var(--display); font-weight: 400; font-size: 1.6rem; color: var(--ink); margin-bottom: .5rem; }
 .preview-note {
@@ -416,6 +420,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
   <div id="note"></div>
   <p class="admin-hint">Admin: drag any artwork (or its ⠿ handle on touch screens) to reorder it, or drop it into another section. Grouped pieces show here one by one; visitors see them as a stack.</p>
   <div id="sections"></div>
+  <div class="empty loading" id="loading" hidden><span class="spin"></span>Loading artwork…</div>
   <div class="empty" id="empty" hidden><strong>Coming soon</strong>New artwork is on the way.</div>
 </main>
 
@@ -533,6 +538,7 @@ let filter = "all";
 let visible = [];
 
 let items = [];
+let loaded = false;
 let isAdmin = false;
 let auth, db;
 
@@ -691,8 +697,9 @@ function render() {
   mk("all", "All", all.length);
   CATS.forEach(c => mk(c.id, c.name, all.filter(x => catOf(x) === c.id).length));
 
-  $("count").textContent = configured ? (all.length + (all.length === 1 ? " piece" : " pieces")) : "Sample layout";
-  $("empty").hidden = !(configured && all.length === 0);
+  $("count").textContent = configured && !loaded ? "" : configured ? (all.length + (all.length === 1 ? " piece" : " pieces")) : "Sample layout";
+  $("empty").hidden = !(configured && loaded && all.length === 0);
+  $("loading").hidden = !(configured && !loaded);
 
   // sections
   visible = [];
@@ -1324,7 +1331,7 @@ if (configured) {
 
     onSnapshot(
       query(collection(db, "artworks"), orderBy("createdAt", "desc")),
-      snap => { items = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
+      snap => { loaded = true; items = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
       err => { console.error(err); toast("Could not load the gallery"); }
     );
 
