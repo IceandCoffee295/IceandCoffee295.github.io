@@ -138,7 +138,51 @@ body.admin .lock { background: var(--sky); border-color: var(--sky); color: var(
   margin-top: .9rem; font-size: .84rem; color: var(--ink);
   display: flex; justify-content: space-between; gap: 1rem;
 }
-.tile .cap em { font-style: normal; color: var(--taupe); font-size: .74rem; letter-spacing: .08em; white-space: nowrap; }
+.tile .cap em { font-style: normal; color: var(--taupe); font-size: .74rem; letter-spacing: .08em; white-space: nowrap; margin-left: auto; }
+.tile .cap > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .cap { align-items: center; justify-content: flex-start; gap: .5rem; }
+
+/* likes */
+.like {
+  flex: none; display: inline-flex; align-items: center; gap: .3rem; border: 0; background: none; cursor: pointer;
+  color: var(--taupe); padding: .15rem .25rem; margin: -.15rem 0; border-radius: 999px; font: inherit; font-size: .74rem;
+  transition: color .2s, background .2s;
+}
+.like svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .2s; }
+.like:hover { color: #ff8fb3; background: rgba(255,143,179,.08); }
+.like.on { color: #ff8fb3; }
+.like.on svg { fill: currentColor; }
+.like.pop svg { animation: pop .45s cubic-bezier(.2,.9,.3,1.4); }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
+.like .n:empty { display: none; }
+body.admin .like { cursor: default; }
+body.admin .like:hover { background: none; color: var(--taupe); }
+body.admin .like.has { color: #ff8fb3; }
+body.admin .like.has svg { fill: currentColor; }
+.lb .lb-like { position: absolute; left: .8rem; top: .8rem; z-index: 3; width: auto; height: 38px; opacity: 1;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 0 .9rem; font-size: .8rem; }
+.lb .lb-like svg { width: 18px; height: 18px; }
+.lb .lb-like:empty { display: none; }
+
+/* stats (admin) */
+#statsDlg { max-width: min(640px, 94vw); width: 100%; }
+.st-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .6rem; margin-bottom: 1.4rem; }
+.st-card { background: var(--mat); border: 1px solid var(--line); border-radius: 6px; padding: .8rem .9rem; }
+.st-card b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--ink); line-height: 1.1; }
+.st-card span { font-size: .72rem; letter-spacing: .06em; color: var(--taupe); }
+.st-h { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--taupe); margin: 0 0 .6rem; }
+.st-bars { display: flex; align-items: flex-end; gap: 4px; height: 90px; margin-bottom: .3rem; }
+.st-bars div { flex: 1; background: var(--lavender); border-radius: 2px 2px 0 0; min-height: 2px; position: relative; }
+.st-bars div:hover { background: var(--mauve); }
+.st-bars div:hover::after { content: attr(data-t); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  white-space: nowrap; background: var(--ink); color: var(--on-ink); font-size: .68rem; padding: .15rem .4rem; border-radius: 3px; }
+.st-axis { display: flex; justify-content: space-between; font-size: .66rem; color: var(--taupe); margin-bottom: 1.4rem; }
+.st-list { list-style: none; max-height: 260px; overflow: auto; margin-bottom: 1.2rem; }
+.st-list li { display: flex; align-items: center; gap: .7rem; padding: .4rem 0; border-bottom: 1px solid var(--line); font-size: .85rem; }
+.st-list img { width: 36px; height: 45px; object-fit: cover; border-radius: 2px; flex: none; }
+.st-list .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-list .c { color: #ff8fb3; white-space: nowrap; }
+.st-note { font-size: .74rem; color: var(--taupe); line-height: 1.6; margin-bottom: 1.2rem; }
 
 .tools { position: absolute; top: .6rem; right: .6rem; display: none; gap: .35rem; z-index: 3; flex-wrap: wrap; justify-content: flex-end; }
 body.admin .tools { display: flex; }
@@ -464,6 +508,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
   <select class="norm-only" id="catSel" aria-label="Upload to section"></select>
   <label class="norm-only">+ Add artwork<input type="file" id="file" accept="image/*" multiple></label>
   <button class="norm-only" id="grpBtn">Make a group</button>
+  <button class="norm-only" id="statsBtn">Stats</button>
   <span class="sel-only" id="selInfo">Select pieces</span>
   <button class="sel-only" id="grpMake" disabled>Create group</button>
   <button class="sel-only" id="grpCancel">Cancel</button>
@@ -483,8 +528,15 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
     <button class="fit" id="zFit" aria-label="Fit to screen">Fit</button>
     <span class="hd" id="hdLbl"></span>
   </div>
+  <button class="lb-like like" id="lbLike" aria-label="Like"></button>
   <div class="t" id="lbT"></div>
 </div>
+
+<dialog id="statsDlg">
+  <h3>Site stats</h3>
+  <div id="statsBody"><p>Loading…</p></div>
+  <button class="btn" id="statsClose">Close</button>
+</dialog>
 
 <dialog id="cropDlg">
   <h3>Thumbnail crop</h3>
@@ -508,8 +560,8 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, setDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, setDoc, getDoc, getDocs, onSnapshot, increment, query, orderBy, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const S = window.SITE;
 const $ = id => document.getElementById(id);
@@ -586,7 +638,9 @@ function tileEl(it, idx, delayN) {
   cap.className = "cap";
   const t = document.createElement("span"); t.textContent = it.title || "Untitled";
   const c = document.createElement("em"); c.textContent = CATS.find(x => x.id === catOf(it)).name;
-  cap.append(t, c);
+  cap.append(t);
+  if (it.id) cap.append(likeBtn(it));
+  cap.append(c);
   fig.append(cap);
 
   if (it.id) {
@@ -1128,6 +1182,7 @@ function showLB() {
     if (g.length > 1) cap = (it.groupName || "Group") + "  ·  " + (g.indexOf(it) + 1) + " / " + g.length + (it.title ? "  ·  " + it.title : "");
   }
   $("lbT").textContent = cap;
+  paintLike($("lbLike"), it);
 }
 // size the image to fit the screen (same size for the preview and the HD file, so the swap doesn't jump)
 let lbAR = 0;
@@ -1280,6 +1335,138 @@ async function compress(file) {
   throw new Error("too large");
 }
 
+// ── likes + visitor stats ──
+const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 7 4.5c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.6 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>';
+let me = null;                               // this visitor's anonymous id
+let likeCounts = {};                         // artwork id -> likes (loaded for admin)
+let likesUnsub = null;
+const likedKey = () => "liked:" + (me || "");
+function likedSet() { try { return new Set(JSON.parse(localStorage.getItem(likedKey()) || "[]")); } catch { return new Set(); } }
+function saveLiked(set) { try { localStorage.setItem(likedKey(), JSON.stringify([...set])); } catch {} }
+function paintLike(btn, it) {
+  if (!it || !it.id) { btn.innerHTML = ""; return; }
+  const n = likeCounts[it.id] || 0;
+  btn.innerHTML = HEART + '<span class="n"></span>';
+  if (isAdmin) {
+    btn.querySelector(".n").textContent = n;
+    btn.classList.toggle("has", n > 0); btn.classList.remove("on");
+    btn.title = n + (n === 1 ? " like" : " likes");
+  } else {
+    const on = likedSet().has(it.id);
+    btn.classList.toggle("on", on);
+    btn.title = on ? "Unlike" : "Like this piece";
+    btn.setAttribute("aria-pressed", on);
+  }
+  btn.onclick = e => { e.stopPropagation(); if (!isAdmin) toggleLike(it, btn); };
+}
+function likeBtn(it) { const b = document.createElement("button"); b.className = "like"; b.dataset.id = it.id; b.setAttribute("aria-label", "Like"); paintLike(b, it); return b; }
+let liking = new Set();
+async function toggleLike(it, btn) {
+  if (!me || liking.has(it.id)) { if (!me) toast("One moment…"); return; }
+  liking.add(it.id);
+  const set = likedSet(), wasOn = set.has(it.id);
+  wasOn ? set.delete(it.id) : set.add(it.id); saveLiked(set);
+  btn.classList.toggle("on", !wasOn);
+  if (!wasOn) { btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop"); }
+  syncLikeButtons(it.id, !wasOn);
+  const cRef = doc(db, "likes", it.id), mRef = doc(db, "likes", it.id, "by", me);
+  try {
+    const b = writeBatch(db);
+    if (wasOn) { b.delete(mRef); b.set(cRef, { n: increment(-1) }, { merge: true }); }
+    else { b.set(mRef, { t: serverTimestamp() }); b.set(cRef, { n: increment(1) }, { merge: true }); }
+    await b.commit();
+  } catch (err) {
+    // probably already in that state on the server (e.g. liked earlier from this browser) — sync with it
+    console.warn(err);
+    try {
+      const mine = await getDoc(mRef);
+      const s2 = likedSet(); mine.exists() ? s2.add(it.id) : s2.delete(it.id); saveLiked(s2);
+      syncLikeButtons(it.id, mine.exists());
+    } catch {}
+  } finally { liking.delete(it.id); }
+}
+function syncLikeButtons(id, on) {
+  document.querySelectorAll(".like").forEach(b => { if (b.dataset.id === id) b.classList.toggle("on", on); });
+  const c = visible[cur]; if (c && c.id === id) $("lbLike").classList.toggle("on", on);
+}
+
+const dayKey = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+async function countVisit() {
+  try {
+    if (sessionStorage.getItem("counted")) return;
+    sessionStorage.setItem("counted", "1");
+  } catch {}
+  try {
+    const vRef = doc(db, "visitors", me);
+    let isNew = false;
+    try { isNew = !(await getDoc(vRef)).exists(); } catch {}
+    const b = writeBatch(db);
+    const site = { views: increment(1) };
+    if (isNew) { b.set(vRef, { t: serverTimestamp() }); site.visitors = increment(1); }
+    b.set(doc(db, "stats", "site"), site, { merge: true });
+    b.set(doc(db, "daily", dayKey()), { views: increment(1) }, { merge: true });
+    await b.commit();
+  } catch (err) { console.warn("visit not counted", err); }
+}
+function watchLikes(on) {
+  if (likesUnsub) { likesUnsub(); likesUnsub = null; }
+  if (!on) { likeCounts = {}; return; }
+  likesUnsub = onSnapshot(collection(db, "likes"), snap => {
+    likeCounts = {}; snap.docs.forEach(d => likeCounts[d.id] = d.data().n || 0);
+    document.querySelectorAll(".tile .like").forEach(b => { const it = items.find(x => x.id === b.dataset.id); if (it) paintLike(b, it); });
+    if ($("lb").classList.contains("on")) paintLike($("lbLike"), visible[cur]);
+  }, err => console.warn(err));
+}
+
+async function openStats() {
+  $("statsBody").innerHTML = "<p>Loading…</p>";
+  $("statsDlg").showModal();
+  try {
+    const [site, days] = await Promise.all([getDoc(doc(db, "stats", "site")), getDocs(collection(db, "daily"))]);
+    const S2 = site.exists() ? site.data() : {};
+    const daily = {}; days.docs.forEach(d => daily[d.id] = d.data().views || 0);
+    const today = dayKey();
+    const last = n => { let t = 0; for (let i = 0; i < n; i++) t += daily[dayKey(new Date(Date.now() - i * 864e5))] || 0; return t; };
+    const totalLikes = Object.values(likeCounts).reduce((a, b) => a + b, 0);
+    const wrap = document.createElement("div");
+    const cards = [["Visitors (all time)", S2.visitors || 0], ["Visits (all time)", S2.views || 0], ["Visits today", daily[today] || 0],
+                   ["Last 7 days", last(7)], ["Last 30 days", last(30)], ["Total likes", totalLikes]];
+    const g = document.createElement("div"); g.className = "st-grid";
+    cards.forEach(([l, v]) => { const c = document.createElement("div"); c.className = "st-card"; c.innerHTML = "<b></b><span></span>"; c.querySelector("b").textContent = v.toLocaleString(); c.querySelector("span").textContent = l; g.append(c); });
+    wrap.append(g);
+    // last 14 days bars
+    const h1 = document.createElement("p"); h1.className = "st-h"; h1.textContent = "Visits · last 14 days"; wrap.append(h1);
+    const bars = document.createElement("div"); bars.className = "st-bars";
+    const series = []; for (let i = 13; i >= 0; i--) { const k = dayKey(new Date(Date.now() - i * 864e5)); series.push([k, daily[k] || 0]); }
+    const max = Math.max(1, ...series.map(x => x[1]));
+    series.forEach(([k, v]) => { const d = document.createElement("div"); d.style.height = (v / max * 100) + "%"; d.dataset.t = k.slice(5).replace("-", "/") + " · " + v; bars.append(d); });
+    wrap.append(bars);
+    const ax = document.createElement("div"); ax.className = "st-axis"; ax.innerHTML = "<span></span><span>today</span>";
+    ax.firstChild.textContent = series[0][0].slice(5).replace("-", "/"); wrap.append(ax);
+    // most liked
+    const h2 = document.createElement("p"); h2.className = "st-h"; h2.textContent = "Most liked"; wrap.append(h2);
+    const ranked = items.map(it => [it, likeCounts[it.id] || 0]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+    if (!ranked.length) { const p = document.createElement("p"); p.className = "st-note"; p.textContent = "No likes yet."; wrap.append(p); }
+    else {
+      const ul = document.createElement("ul"); ul.className = "st-list";
+      ranked.forEach(([it, n]) => {
+        const li = document.createElement("li");
+        const im = new Image(); im.src = it.src; im.alt = "";
+        const t = document.createElement("span"); t.className = "t"; t.textContent = it.title || "Untitled";
+        const c = document.createElement("span"); c.className = "c"; c.textContent = "♥ " + n;
+        li.append(im, t, c); ul.append(li);
+      });
+      wrap.append(ul);
+    }
+    const note = document.createElement("p"); note.className = "st-note";
+    note.textContent = "A visitor is one browser/device; a visit is one browsing session. Your own visits while signed in aren't counted. Days follow California time.";
+    wrap.append(note);
+    $("statsBody").innerHTML = ""; $("statsBody").append(wrap);
+  } catch (err) { console.error(err); $("statsBody").innerHTML = "<p>Could not load stats.</p>"; }
+}
+$("statsBtn").onclick = openStats;
+$("statsClose").onclick = () => $("statsDlg").close();
+
 // ── admin UI ──
 function setAdmin(on, email) {
   isAdmin = on;
@@ -1287,6 +1474,7 @@ function setAdmin(on, email) {
   closeSpread(true);
   document.body.classList.toggle("admin", on);
   $("who").textContent = on ? email : "";
+  watchLikes(on);
   render();
 }
 
@@ -1338,9 +1526,16 @@ if (configured) {
     );
 
     onAuthStateChanged(auth, user => {
-      const ok = !!user && (user.email || "").toLowerCase() === S.adminEmail.toLowerCase();
-      if (user && !ok) { toast("That account isn't the site admin."); signOut(auth); }
-      setAdmin(ok, user && user.email);
+      if (!user) {                                   // visitors get a silent anonymous id (for likes + visit counts)
+        me = null; if (isAdmin) setAdmin(false);
+        signInAnonymously(auth).catch(err => console.warn("anonymous sign-in failed", err));
+        return;
+      }
+      if (user.isAnonymous) { me = user.uid; if (isAdmin) setAdmin(false); else render(); countVisit(); return; }
+      const ok = (user.email || "").toLowerCase() === S.adminEmail.toLowerCase();
+      if (!ok) { toast("That account isn't the site admin."); signOut(auth); return; }
+      me = user.uid;
+      setAdmin(true, user.email);
     });
   } catch (err) {
     console.error(err);
