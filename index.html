@@ -117,17 +117,11 @@ body.admin .lock { background: var(--charcoal); border-color: var(--charcoal); c
 }
 
 .tile { position: relative; cursor: zoom-in; opacity: 0; animation: fade .9s ease forwards; }
-.frame {
-  position: relative; aspect-ratio: 4 / 5; background: var(--mat);
-  display: grid; place-items: center; padding: 9%; overflow: hidden;
-}
-.frame img, .frame .ph {
-  max-width: 100%; max-height: 100%; width: auto; height: auto; display: block;
-  object-fit: contain; box-shadow: 0 6px 18px -10px rgba(52,54,51,.35);
-  transition: transform .6s cubic-bezier(.2,.7,.2,1);
-}
-.frame .ph { width: 100%; font-size: 1.6rem; color: rgba(255,255,255,.7); display: grid; place-items: center; }
-.tile:hover .frame img, .tile:hover .frame .ph { transform: scale(1.03); }
+.frame { position: relative; aspect-ratio: 4 / 5; background: var(--mat); overflow: hidden; }
+.frame .pan { position: absolute; inset: 0; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+.frame .pan img { position: absolute; display: block; max-width: none; user-select: none; -webkit-user-drag: none; }
+.frame .ph { position: absolute; inset: 0; font-size: 1.6rem; color: rgba(255,255,255,.7); display: grid; place-items: center; }
+.tile:hover .frame .pan { transform: scale(1.03); }
 .tile .cap {
   margin-top: .9rem; font-size: .84rem; color: var(--charcoal);
   display: flex; justify-content: space-between; gap: 1rem;
@@ -201,9 +195,42 @@ body.admin .adminbar { display: flex; }
 .adminbar input { display: none; }
 
 /* ── Lightbox ── */
-.lb { position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,.97); display: none; align-items: center; justify-content: center; padding: 4rem 4.5rem; }
-.lb.on { display: flex; }
-.lb img { max-width: min(1200px, 100%); max-height: 100%; box-shadow: 0 20px 60px -20px rgba(52,54,51,.4); }
+.lb { position: fixed; inset: 0; z-index: 100; background: #fff; display: none; }
+.lb.on { display: block; }
+.lb-stage {
+  position: absolute; inset: 3.8rem 4.5rem 5.2rem; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; touch-action: none; cursor: zoom-in;
+}
+.lb-stage.zoomed { cursor: grab; }
+.lb-stage.dragging { cursor: grabbing; }
+.lb-stage img {
+  max-width: 100%; max-height: 100%; display: block; user-select: none; -webkit-user-drag: none;
+  transform-origin: center center; box-shadow: 0 20px 60px -20px rgba(52,54,51,.4); will-change: transform;
+}
+.lb-stage img.anim { transition: transform .25s ease; }
+.lb .zoombar {
+  position: absolute; left: 50%; bottom: 3rem; transform: translateX(-50%); z-index: 2;
+  display: flex; align-items: center; gap: .15rem; padding: .2rem; background: #fff;
+  border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 20px -10px rgba(52,54,51,.3);
+}
+.lb .zoombar button { position: static; width: 36px; height: 34px; font-size: 1.15rem; opacity: .75; border-radius: 4px; }
+.lb .zoombar button:hover { background: var(--mat); opacity: 1; }
+.lb .zoombar .fit { width: auto; padding: 0 .7rem; font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; }
+.lb .zoombar span { min-width: 3.4rem; text-align: center; font-size: .78rem; color: var(--taupe); font-variant-numeric: tabular-nums; }
+
+/* crop editor (admin) */
+.crop-box { width: min(300px, 70vw); margin: 0 auto 1rem; }
+.crop-frame { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--mat); cursor: grab; touch-action: none; outline: 1px solid var(--line); }
+.crop-frame.dragging { cursor: grabbing; }
+.crop-frame img { position: absolute; display: block; max-width: none; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.crop-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to right, transparent 33.1%, rgba(255,255,255,.55) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.55) 66.7%, transparent 66.9%),
+              linear-gradient(to bottom, transparent 33.1%, rgba(255,255,255,.55) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.55) 66.7%, transparent 66.9%); }
+.crop-zoom { display: flex; align-items: center; gap: .7rem; font-size: .8rem; color: var(--taupe); margin-bottom: 1.3rem; }
+.crop-zoom input { flex: 1; accent-color: var(--lavender); }
+.crop-actions { display: flex; gap: .5rem; justify-content: flex-end; flex-wrap: wrap; }
+.crop-actions .btn { padding: .7rem 1.2rem; text-transform: none; letter-spacing: .03em; }
+#cropDlg p { margin-bottom: 1rem; }
 .lb .t { position: absolute; bottom: 1.3rem; left: 0; right: 0; text-align: center; color: var(--taupe); font-size: .85rem; letter-spacing: .05em; }
 .lb button { position: absolute; background: none; color: var(--charcoal); border: 0; width: 46px; height: 46px; font-size: 1.6rem; font-weight: 300; cursor: pointer; opacity: .55; transition: opacity .2s; }
 .lb button:hover { opacity: 1; }
@@ -223,20 +250,20 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
 .toast.on { opacity: 1; transform: translate(-50%,0); }
 
 @keyframes fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .tile { animation: none; opacity: 1; } .frame img, .frame .ph { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .tile { animation: none; opacity: 1; } .frame .pan { transition: none; } }
 
 @media (max-width: 760px) {
   .bar nav { gap: .9rem; }
   .bar nav a { font-size: .66rem; letter-spacing: .08em; }
   .mark { font-size: 1rem; }
   .grid { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
-  .frame { padding: 7%; }
   .tile .cap em { display: none; }
   .about-in { grid-template-columns: 1fr; gap: 1.5rem; }
   .about, .contact { padding: 5rem var(--pad); }
   footer { flex-direction: column; gap: .3rem; text-align: center; }
   .adminbar .who { display: none; }
-  .lb { padding: 3.5rem .5rem; }
+  .lb-stage { inset: 3.4rem .5rem 5.4rem; }
+  .lb .p, .lb .n { top: auto; bottom: 2.9rem; transform: none; z-index: 3; }
 }
 </style>
 </head>
@@ -314,10 +341,28 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
 <div class="lb" id="lb">
   <button class="x" id="lbX" aria-label="Close">✕</button>
   <button class="p" id="lbP" aria-label="Previous">‹</button>
-  <img id="lbImg" alt="">
+  <div class="lb-stage" id="lbStage"><img id="lbImg" alt="" draggable="false"></div>
   <button class="n" id="lbN" aria-label="Next">›</button>
+  <div class="zoombar">
+    <button id="zOut" aria-label="Zoom out">−</button>
+    <span id="zLbl">100%</span>
+    <button id="zIn" aria-label="Zoom in">+</button>
+    <button class="fit" id="zFit" aria-label="Fit to screen">Fit</button>
+  </div>
   <div class="t" id="lbT"></div>
 </div>
+
+<dialog id="cropDlg">
+  <h3>Thumbnail crop</h3>
+  <p>Drag the picture to choose what shows in the gallery. Use the slider to zoom. The full image still opens when someone clicks it.</p>
+  <div class="crop-box"><div class="crop-frame" id="cropFrame"><img id="cropImg" alt="" draggable="false"></div></div>
+  <label class="crop-zoom">Zoom <input type="range" id="cropZ" min="1" max="4" step="0.01" value="1"></label>
+  <div class="crop-actions">
+    <button class="btn ghost" id="cropReset">Reset</button>
+    <button class="btn ghost" id="cropCancel">Cancel</button>
+    <button class="btn" id="cropSave">Save</button>
+  </div>
+</dialog>
 
 <dialog id="setup">
   <h3>Admin login isn't connected yet</h3>
@@ -384,16 +429,20 @@ function tileEl(it, idx, delayN) {
   frame.className = "frame";
 
   if (it.src) {
+    const pan = document.createElement("div"); pan.className = "pan";
     const img = new Image();
-    img.src = it.src; img.alt = it.title || "Artwork"; img.loading = "lazy";
-    if (it.w && it.h) { img.width = it.w; img.height = it.h; }
-    frame.append(img);
+    img.alt = it.title || "Artwork"; img.loading = "lazy"; img.draggable = false;
+    if (it.w && it.h) placeCrop(img, it.w / it.h, it.crop);
+    img.onload = () => { if (!(it.w && it.h)) placeCrop(img, img.naturalWidth / img.naturalHeight, it.crop); };
+    img.src = it.src;
+    pan.append(img);
+    frame.append(pan);
   } else {
+    const pan = document.createElement("div"); pan.className = "pan";
     const ph = document.createElement("div");
-    ph.className = "ph"; ph.style.aspectRatio = it.ratio; ph.style.background = it.grad; ph.textContent = "✦";
-    const [rw, rh] = it.ratio.split("/").map(Number);
-    if (rw > rh * (4 / 5)) { ph.style.width = "100%"; } else { ph.style.width = "auto"; ph.style.height = "100%"; }
-    frame.append(ph);
+    ph.className = "ph"; ph.style.background = it.grad; ph.textContent = "✦";
+    pan.append(ph);
+    frame.append(pan);
   }
   fig.append(frame);
 
@@ -432,7 +481,9 @@ function tileEl(it, idx, delayN) {
       if (!confirm("Delete this artwork from your site?")) return;
       try { await deleteDoc(doc(db, "artworks", it.id)); toast("Deleted"); } catch (err) { console.error(err); toast("Could not delete"); }
     };
-    tools.append(sel, ren, del);
+    const crp = document.createElement("button"); crp.textContent = "Crop";
+    crp.onclick = e => { e.stopPropagation(); openCrop(it); };
+    tools.append(sel, crp, ren, del);
     frame.append(tools);
   }
 
@@ -507,30 +558,165 @@ function render() {
   });
 }
 
-// ── lightbox ──
+// ── thumbnail crop ──
+// crop = { x, y, z }: x/y = point of the image (0–1) at the thumbnail's center, z = zoom (1 = just fills the frame)
+const FRAME_AR = 4 / 5;
+function cropGeom(ar, crop) {
+  const z = Math.max(1, (crop && crop.z) || 1);
+  let W, H; // image size as % of frame
+  if (ar > FRAME_AR) { H = 100 * z; W = H * ar / FRAME_AR; } else { W = 100 * z; H = W * FRAME_AR / ar; }
+  const clamp = (v, size) => Math.min(1 - 50 / size, Math.max(50 / size, v));
+  const x = clamp(crop && crop.x != null ? crop.x : .5, W);
+  const y = clamp(crop && crop.y != null ? crop.y : .5, H);
+  return { W, H, x, y, z };
+}
+function placeCrop(img, ar, crop) {
+  const g = cropGeom(ar, crop);
+  Object.assign(img.style, { width: g.W + "%", height: g.H + "%", left: (50 - g.x * g.W) + "%", top: (50 - g.y * g.H) + "%" });
+  return g;
+}
+
+let cropIt = null, cropAR = 1, cropState = null;
+function openCrop(it) {
+  cropIt = it; cropState = { x: .5, y: .5, z: 1, ...(it.crop || {}) };
+  const img = $("cropImg");
+  const go = () => { cropAR = (it.w && it.h) ? it.w / it.h : img.naturalWidth / img.naturalHeight; $("cropZ").value = cropState.z; drawCrop(); };
+  img.onload = go; img.src = it.src; if (img.complete && img.naturalWidth) go();
+  $("cropDlg").showModal();
+}
+function drawCrop() { const g = placeCrop($("cropImg"), cropAR, cropState); cropState.x = g.x; cropState.y = g.y; return g; }
+$("cropZ").oninput = e => { cropState.z = +e.target.value; drawCrop(); };
+(() => {
+  const f = $("cropFrame"); let last = null;
+  f.addEventListener("pointerdown", e => { last = { x: e.clientX, y: e.clientY }; f.setPointerCapture(e.pointerId); f.classList.add("dragging"); });
+  f.addEventListener("pointermove", e => {
+    if (!last) return;
+    const r = f.getBoundingClientRect(), g = cropGeom(cropAR, cropState);
+    cropState.x -= (e.clientX - last.x) / (r.width * g.W / 100);
+    cropState.y -= (e.clientY - last.y) / (r.height * g.H / 100);
+    last = { x: e.clientX, y: e.clientY }; drawCrop();
+  });
+  const end = () => { last = null; f.classList.remove("dragging"); };
+  f.addEventListener("pointerup", end); f.addEventListener("pointercancel", end);
+  f.addEventListener("wheel", e => {
+    e.preventDefault();
+    cropState.z = Math.min(4, Math.max(1, cropState.z * (e.deltaY < 0 ? 1.08 : 1 / 1.08)));
+    $("cropZ").value = cropState.z; drawCrop();
+  }, { passive: false });
+})();
+$("cropReset").onclick = () => { cropState = { x: .5, y: .5, z: 1 }; $("cropZ").value = 1; drawCrop(); };
+$("cropCancel").onclick = () => $("cropDlg").close();
+$("cropSave").onclick = async () => {
+  const c = { x: +cropState.x.toFixed(4), y: +cropState.y.toFixed(4), z: +cropState.z.toFixed(3) };
+  try { await updateDoc(doc(db, "artworks", cropIt.id), { crop: c }); $("cropDlg").close(); toast("Thumbnail updated"); }
+  catch (err) { console.error(err); toast("Could not save crop"); }
+};
+
+// ── lightbox (full image + zoom) ──
 let cur = 0;
-function openLB(i) { cur = i; showLB(); $("lb").classList.add("on"); }
+const Z = { s: 1, tx: 0, ty: 0, min: 1, max: 8 };
+const lbImg = $("lbImg"), stage = $("lbStage");
+function applyZ(anim) {
+  lbImg.classList.toggle("anim", !!anim);
+  lbImg.style.transform = `translate(${Z.tx}px, ${Z.ty}px) scale(${Z.s})`;
+  $("zLbl").textContent = Math.round(Z.s * 100) + "%";
+  stage.classList.toggle("zoomed", Z.s > 1.001);
+}
+function clampPan() {
+  const mx = Math.max(0, (lbImg.offsetWidth * Z.s - stage.clientWidth) / 2);
+  const my = Math.max(0, (lbImg.offsetHeight * Z.s - stage.clientHeight) / 2);
+  Z.tx = Math.min(mx, Math.max(-mx, Z.tx)); Z.ty = Math.min(my, Math.max(-my, Z.ty));
+}
+// zoom to scale s, keeping the point (cx, cy) (relative to stage center) fixed
+function zoomTo(s, cx = 0, cy = 0, anim = true) {
+  s = Math.min(Z.max, Math.max(Z.min, s));
+  const k = s / Z.s;
+  Z.tx = cx - (cx - Z.tx) * k; Z.ty = cy - (cy - Z.ty) * k; Z.s = s;
+  if (s <= 1.001) { Z.s = 1; Z.tx = 0; Z.ty = 0; }
+  clampPan(); applyZ(anim);
+}
+function stagePoint(e) { const r = stage.getBoundingClientRect(); return [e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2]; }
+function resetZ() { Z.s = 1; Z.tx = 0; Z.ty = 0; applyZ(false); }
+
+function openLB(i) { cur = i; showLB(); $("lb").classList.add("on"); document.body.style.overflow = "hidden"; }
+function closeLB() { $("lb").classList.remove("on"); document.body.style.overflow = ""; }
 function showLB() {
   const it = visible[cur]; if (!it) return;
-  $("lbImg").src = it.src; $("lbImg").alt = it.title || "";
+  resetZ();
+  lbImg.src = it.src; lbImg.alt = it.title || "";
   $("lbT").textContent = it.title || "";
 }
 function step(d) { if (!visible.length) return; cur = (cur + d + visible.length) % visible.length; showLB(); }
-$("lbX").onclick = () => $("lb").classList.remove("on");
+$("lbX").onclick = closeLB;
+$("lb").addEventListener("click", e => { if (e.target.id === "lb") closeLB(); });
 $("lbP").onclick = () => step(-1);
 $("lbN").onclick = () => step(1);
-$("lb").onclick = e => { if (e.target.id === "lb") $("lb").classList.remove("on"); };
+$("zIn").onclick = () => zoomTo(Z.s * 1.5);
+$("zOut").onclick = () => zoomTo(Z.s / 1.5);
+$("zFit").onclick = () => zoomTo(1);
+
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const [cx, cy] = stagePoint(e);
+  zoomTo(Z.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0022)), cx, cy, false);
+}, { passive: false });
+
+stage.addEventListener("dblclick", e => {
+  const [cx, cy] = stagePoint(e);
+  zoomTo(Z.s > 1.001 ? 1 : 2.5, cx, cy);
+});
+
+// drag to pan, pinch to zoom, click empty space to close
+const ptrs = new Map(); let pinch = null, moved = false, downAt = null;
+stage.addEventListener("pointerdown", e => {
+  stage.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  moved = false; downAt = { x: e.clientX, y: e.clientY, t: e.target };
+  if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()];
+    pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: Z.s };
+  }
+  if (Z.s > 1.001) stage.classList.add("dragging");
+});
+stage.addEventListener("pointermove", e => {
+  const p = ptrs.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY;
+  if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 4) moved = true;
+  if (ptrs.size === 2 && pinch) {
+    const [a, b] = [...ptrs.values()];
+    const r = stage.getBoundingClientRect();
+    const cx = (a.x + b.x) / 2 - r.left - r.width / 2, cy = (a.y + b.y) / 2 - r.top - r.height / 2;
+    zoomTo(pinch.s * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, cx, cy, false);
+  } else if (ptrs.size === 1 && Z.s > 1.001) {
+    Z.tx += dx; Z.ty += dy; clampPan(); applyZ(false);
+  }
+});
+function ptrEnd(e) {
+  const wasTap = ptrs.size === 1 && !moved && downAt;
+  ptrs.delete(e.pointerId);
+  if (ptrs.size < 2) pinch = null;
+  if (!ptrs.size) stage.classList.remove("dragging");
+  if (wasTap && e.type === "pointerup" && downAt.t === stage && Z.s <= 1.001) closeLB();
+}
+stage.addEventListener("pointerup", ptrEnd);
+stage.addEventListener("pointercancel", ptrEnd);
+window.addEventListener("resize", () => { if ($("lb").classList.contains("on")) { clampPan(); applyZ(false); } });
+
 document.addEventListener("keydown", e => {
   if (!$("lb").classList.contains("on")) return;
-  if (e.key === "Escape") $("lb").classList.remove("on");
+  if (e.key === "Escape") closeLB();
   if (e.key === "ArrowLeft") step(-1);
   if (e.key === "ArrowRight") step(1);
+  if (e.key === "+" || e.key === "=") zoomTo(Z.s * 1.5);
+  if (e.key === "-" || e.key === "_") zoomTo(Z.s / 1.5);
+  if (e.key === "0") zoomTo(1);
 });
 
 // ── image compression (keeps each photo small enough to store) ──
 async function compress(file) {
   const bmp = await createImageBitmap(file);
-  for (const max of [1500, 1200, 900, 700]) {
+  for (const max of [2200, 1800, 1500, 1200, 900, 700]) {
     const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
     const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
     const c = document.createElement("canvas"); c.width = w; c.height = h;
