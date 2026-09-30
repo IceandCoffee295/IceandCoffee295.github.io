@@ -124,7 +124,7 @@ body.admin .lock { background: var(--sky); border-color: var(--sky); color: var(
 
 .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
-  gap: 3.2rem 2.2rem;
+  gap: 3.2rem 1rem;
 }
 
 .tile { position: relative; cursor: zoom-in; opacity: 0; animation: fade .9s ease forwards; }
@@ -159,19 +159,26 @@ body.dragging-tile .adminbar { pointer-events: none; opacity: .35; }
 #sections.noanim .tile { animation: none; opacity: 1; }
 
 /* ── groups: stacked tile (visitors) ── */
-.stack .deck { position: relative; aspect-ratio: 4 / 5; }
-.stack .deck > .frame { position: absolute; inset: 0; z-index: 3; box-shadow: 0 10px 24px -14px rgba(0,0,0,.45); }
-.stack .sheet {
-  position: absolute; inset: 0; overflow: hidden; background: var(--mat);
-  box-shadow: 0 6px 18px -10px rgba(0,0,0,.4); outline: 4px solid #2c2e2c; outline-offset: -4px;
-  transition: transform .45s cubic-bezier(.2,.7,.2,1);
+/* a neat card stack that stays inside its own tile */
+.stack .deck { position: relative; padding: 0 16px 20px 0; }
+.stack .deck > .frame {
+  position: relative; z-index: 3; box-shadow: 0 10px 24px -12px rgba(0,0,0,.7);
+  transition: transform .4s cubic-bezier(.2,.7,.2,1);
 }
-.stack .sheet img { position: absolute; display: block; max-width: none; }
-.stack .sheet.s1 { z-index: 2; transform: rotate(3.2deg) translate(6px, -4px); }
-.stack .sheet.s2 { z-index: 1; transform: rotate(-3deg) translate(-6px, -6px); }
-.stack:hover .sheet.s1, .stack.open .sheet.s1 { transform: rotate(7deg) translate(18px, -8px); }
-.stack:hover .sheet.s2, .stack.open .sheet.s2 { transform: rotate(-6.5deg) translate(-18px, -10px); }
+.stack .sheet {
+  position: absolute; left: 0; top: 0; width: calc(100% - 16px); aspect-ratio: 4 / 5; overflow: hidden;
+  background: var(--surface); border: 1px solid rgba(238,233,244,.14);
+  box-shadow: 0 8px 20px -12px rgba(0,0,0,.7);
+  transition: transform .4s cubic-bezier(.2,.7,.2,1);
+}
+.stack .sheet img { position: absolute; display: block; max-width: none; filter: brightness(.55) saturate(.8); }
+.stack .sheet.s1 { z-index: 2; transform: translate(8px, 8px); }
+.stack .sheet.s2 { z-index: 1; transform: translate(16px, 16px); }
+.stack:hover .deck > .frame, .stack.open .deck > .frame { transform: translate(-3px, -3px); }
+.stack:hover .sheet.s1, .stack.open .sheet.s1 { transform: translate(10px, 10px); }
+.stack:hover .sheet.s2, .stack.open .sheet.s2 { transform: translate(20px, 20px); }
 .stack:hover .frame .pan { transform: none; }
+.stack .cap { margin-right: 16px; }
 .stack .count {
   position: absolute; left: .6rem; top: .6rem; z-index: 4; display: flex; align-items: center; gap: .35rem;
   background: rgba(22,23,22,.85); color: var(--ink); font-size: .72rem; letter-spacing: .06em;
@@ -363,7 +370,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
   .bar nav { gap: .9rem; }
   .bar nav a { font-size: .66rem; letter-spacing: .08em; }
   .mark { font-size: 1rem; }
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 2.2rem 1rem; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 2.2rem .7rem; }
 }
 @media (max-width: 540px) {
   .grid { grid-template-columns: 1fr; gap: 2.6rem; }
