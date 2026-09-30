@@ -146,6 +146,82 @@ body.dragging-tile .adminbar { pointer-events: none; opacity: .35; }
 .grid.drop-empty:empty::before { content: 'Drag artwork here'; grid-column: 1 / -1; align-self: center; text-align: center; color: var(--taupe); font-size: .88rem; }
 .grid.drop-on { outline: 2px dashed var(--lavender); outline-offset: 8px; }
 #sections.noanim .tile { animation: none; opacity: 1; }
+
+/* ── groups: stacked tile (visitors) ── */
+.stack .deck { position: relative; aspect-ratio: 4 / 5; }
+.stack .deck > .frame { position: absolute; inset: 0; z-index: 3; box-shadow: 0 10px 24px -14px rgba(52,54,51,.45); }
+.stack .sheet {
+  position: absolute; inset: 0; overflow: hidden; background: var(--mat);
+  box-shadow: 0 6px 18px -10px rgba(52,54,51,.4); outline: 4px solid #fff; outline-offset: -4px;
+  transition: transform .45s cubic-bezier(.2,.7,.2,1);
+}
+.stack .sheet img { position: absolute; display: block; max-width: none; }
+.stack .sheet.s1 { z-index: 2; transform: rotate(3.2deg) translate(6px, -4px); }
+.stack .sheet.s2 { z-index: 1; transform: rotate(-3deg) translate(-6px, -6px); }
+.stack:hover .sheet.s1, .stack.open .sheet.s1 { transform: rotate(7deg) translate(18px, -8px); }
+.stack:hover .sheet.s2, .stack.open .sheet.s2 { transform: rotate(-6.5deg) translate(-18px, -10px); }
+.stack:hover .frame .pan { transform: none; }
+.stack .count {
+  position: absolute; left: .6rem; top: .6rem; z-index: 4; display: flex; align-items: center; gap: .35rem;
+  background: rgba(255,255,255,.94); color: var(--charcoal); font-size: .72rem; letter-spacing: .06em;
+  padding: .28rem .6rem; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.stack .count svg { width: 12px; height: 12px; }
+.stack { cursor: pointer; }
+.stack:focus-visible { outline: 2px solid var(--lavender); outline-offset: 6px; }
+
+/* spread-out panel */
+.spread { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.spread .sp-bg {
+  position: absolute; background: rgba(255,255,255,.97); border: 1px solid var(--line); border-radius: 6px;
+  box-shadow: 0 30px 70px -24px rgba(52,54,51,.45); pointer-events: auto;
+  transform-origin: 0 0; opacity: 0; transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+}
+.spread .sp-head {
+  position: absolute; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+  font-size: .8rem; color: var(--taupe); opacity: 0; transition: opacity .25s ease .12s; pointer-events: none;
+}
+.spread .sp-head b { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; color: var(--charcoal); }
+.spread .sp-th {
+  position: absolute; overflow: hidden; background: var(--mat); cursor: zoom-in; pointer-events: auto;
+  box-shadow: 0 8px 22px -12px rgba(52,54,51,.5); transform-origin: 0 0;
+  transition: transform .5s cubic-bezier(.2,.85,.25,1.05), box-shadow .2s ease, opacity .3s ease;
+}
+.spread .sp-th img { position: absolute; display: block; max-width: none; transition: transform .35s ease; }
+.spread .sp-th:hover img { transform: scale(1.05); }
+.spread .sp-th:hover { box-shadow: 0 14px 30px -12px rgba(125,112,186,.7); }
+.spread .sp-th span {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 1.2rem .5rem .4rem; font-size: .72rem; color: #fff;
+  background: linear-gradient(to top, rgba(52,54,51,.7), transparent); opacity: 0; transition: opacity .2s;
+}
+.spread .sp-th:hover span { opacity: 1; }
+.spread.open .sp-bg { opacity: 1; transform: none !important; }
+.spread.open .sp-head { opacity: 1; }
+.spread.open .sp-th { transform: none !important; }
+@media (prefers-reduced-motion: reduce) { .spread .sp-bg, .spread .sp-th { transition: opacity .2s; } }
+
+/* ── groups: admin ── */
+.gtag {
+  position: absolute; left: .6rem; bottom: .6rem; z-index: 3; border: 0; cursor: pointer; font: inherit;
+  background: var(--lavender); color: #fff; font-size: .7rem; letter-spacing: .04em; padding: .28rem .6rem; border-radius: 999px;
+  max-width: calc(100% - 1.2rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gtag:hover { background: var(--charcoal); }
+.check {
+  display: none; position: absolute; top: .6rem; left: .6rem; z-index: 4; width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,.95); border: 1.5px solid var(--charcoal); place-items: center; font-size: .8rem; color: #fff;
+}
+body.selecting .check { display: grid; }
+body.selecting .tools { display: none; }
+body.selecting .tile { cursor: pointer; }
+.tile.sel .check { background: var(--lavender); border-color: var(--lavender); }
+.tile.sel .check::after { content: '✓'; }
+.tile.sel .frame { outline: 3px solid var(--lavender); outline-offset: -3px; }
+.adminbar .sel-only { display: none; }
+body.selecting .adminbar .sel-only { display: inline-block; }
+body.selecting .adminbar .norm-only { display: none; }
+.adminbar #grpMake { background: var(--lavender); border-color: var(--lavender); color: #fff; }
+.adminbar #grpMake:disabled { opacity: .5; cursor: default; }
 .admin-hint { font-size: .8rem; color: var(--taupe); margin: -2rem 0 2.4rem; display: none; }
 body.admin .admin-hint { display: block; }
 .tools button, .tools select {
@@ -314,7 +390,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
     <span id="count"></span>
   </div>
   <div id="note"></div>
-  <p class="admin-hint">Admin: drag any artwork (or its ⠿ handle on touch screens) to reorder it, or drop it into another section.</p>
+  <p class="admin-hint">Admin: drag any artwork (or its ⠿ handle on touch screens) to reorder it, or drop it into another section. Grouped pieces show here one by one; visitors see them as a stack.</p>
   <div id="sections"></div>
   <div class="empty" id="empty" hidden><strong>Coming soon</strong>New artwork is on the way.</div>
 </main>
@@ -351,9 +427,13 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
 <!-- ADMIN BAR (only visible after admin login) -->
 <div class="adminbar">
   <span class="who" id="who"></span>
-  <select id="catSel" aria-label="Upload to section"></select>
-  <label>+ Add artwork<input type="file" id="file" accept="image/*" multiple></label>
-  <button id="outBtn">Sign out</button>
+  <select class="norm-only" id="catSel" aria-label="Upload to section"></select>
+  <label class="norm-only">+ Add artwork<input type="file" id="file" accept="image/*" multiple></label>
+  <button class="norm-only" id="grpBtn">Make a group</button>
+  <span class="sel-only" id="selInfo">Select pieces</span>
+  <button class="sel-only" id="grpMake" disabled>Create group</button>
+  <button class="sel-only" id="grpCancel">Cancel</button>
+  <button class="norm-only" id="outBtn">Sign out</button>
 </div>
 
 <!-- LIGHTBOX -->
@@ -504,13 +584,33 @@ function tileEl(it, idx, delayN) {
     crp.onclick = e => { e.stopPropagation(); openCrop(it); };
     const grip = document.createElement("button"); grip.textContent = "⠿ Move"; grip.className = "grip"; grip.title = "Drag to reorder";
     grip.onclick = e => e.stopPropagation();
-    tools.append(grip, sel, crp, ren, del);
+    tools.append(grip, sel, crp, ren);
+    if (it.group) {
+      const ug = document.createElement("button"); ug.textContent = "Ungroup";
+      ug.onclick = async e => {
+        e.stopPropagation();
+        try { await updateDoc(doc(db, "artworks", it.id), { group: null, groupName: null }); toast("Removed from group"); }
+        catch (err) { console.error(err); toast("Could not ungroup"); }
+      };
+      tools.append(ug);
+      const tag = document.createElement("button"); tag.className = "gtag";
+      tag.textContent = "▣ " + (it.groupName || "Group"); tag.title = "Rename this group";
+      tag.onclick = e => { e.stopPropagation(); renameGroup(it.group, it.groupName); };
+      frame.append(tag);
+    }
+    tools.append(del);
     frame.append(tools);
+    const chk = document.createElement("span"); chk.className = "check"; frame.append(chk);
+    if (selected.has(it.id)) fig.classList.add("sel");
     fig.dataset.id = it.id;
     fig.addEventListener("pointerdown", e => dragStart(e, fig, grip));
   }
 
-  fig.onclick = () => { if (justDragged) return; if (it.src) openLB(idx); };
+  fig.onclick = () => {
+    if (justDragged) return;
+    if (selecting && it.id) { toggleSel(it.id, fig); return; }
+    if (it.src) openLB(idx);
+  };
   return fig;
 }
 
@@ -579,7 +679,18 @@ function render() {
     } else {
       const grid = document.createElement("div");
       grid.className = "grid"; grid.dataset.c = c.id;
+      const groups = {};
+      list.forEach(it => { if (it.group) (groups[it.group] = groups[it.group] || []).push(it); });
+      const done = new Set();
       list.forEach(it => {
+        const g = it.group && groups[it.group];
+        if (!isAdmin && g && g.length > 1) {
+          if (done.has(it.group)) return;
+          done.add(it.group);
+          const idxs = g.map(m => visible.push(m) - 1);
+          grid.append(stackEl(g, idxs, n++));
+          return;
+        }
         const idx = visible.push(it) - 1;
         grid.append(tileEl(it, idx, n++));
       });
@@ -589,10 +700,175 @@ function render() {
   });
 }
 
+// ── groups ──
+const canHover = matchMedia("(hover: hover) and (pointer: fine)").matches;
+const STACK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="7" width="13" height="13" rx="1.5"/><path d="M4 16V5.5A1.5 1.5 0 0 1 5.5 4H16"/></svg>';
+function croppedImg(it) {
+  const img = new Image(); img.alt = it.title || "Artwork"; img.draggable = false; img.loading = "lazy";
+  if (it.w && it.h) placeCrop(img, it.w / it.h, it.crop);
+  img.onload = () => { if (!(it.w && it.h)) placeCrop(img, img.naturalWidth / img.naturalHeight, it.crop); };
+  img.src = it.src; return img;
+}
+function stackEl(members, idxs, delayN) {
+  const fig = document.createElement("figure");
+  fig.className = "tile stack"; fig.tabIndex = 0;
+  fig.style.animationDelay = Math.min(delayN, 12) * 70 + "ms";
+  fig.setAttribute("aria-label", (members[0].groupName || "Group") + ", " + members.length + " pieces");
+  const deck = document.createElement("div"); deck.className = "deck";
+  [members[2], members[1]].forEach((m, i) => {
+    if (!m) return;
+    const sh = document.createElement("div"); sh.className = "sheet " + (i === 0 ? "s2" : "s1");
+    sh.append(croppedImg(m)); deck.append(sh);
+  });
+  const frame = document.createElement("div"); frame.className = "frame";
+  const pan = document.createElement("div"); pan.className = "pan"; pan.append(croppedImg(members[0]));
+  frame.append(pan);
+  const cnt = document.createElement("span"); cnt.className = "count"; cnt.innerHTML = STACK_ICON;
+  cnt.append(String(members.length)); frame.append(cnt);
+  deck.append(frame); fig.append(deck);
+  const cap = document.createElement("figcaption"); cap.className = "cap";
+  const t = document.createElement("span"); t.textContent = members[0].groupName || "Group";
+  const c = document.createElement("em"); c.textContent = members.length + " pieces";
+  cap.append(t, c); fig.append(cap);
+
+  let timer;
+  if (canHover) {
+    fig.addEventListener("mouseenter", () => { clearTimeout(timer); timer = setTimeout(() => openSpread(fig, members, idxs), 140); });
+    fig.addEventListener("mouseleave", () => clearTimeout(timer));
+  }
+  fig.onclick = () => { if (!spread || spread.fig !== fig) openSpread(fig, members, idxs); };
+  fig.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSpread(fig, members, idxs); } };
+  return fig;
+}
+
+let spread = null;
+function openSpread(fig, members, idxs) {
+  if (spread && spread.fig === fig) return;
+  closeSpread(true);
+  const tr = fig.querySelector(".deck").getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight, n = members.length;
+  const pad = 16, gap = 12, head = 34;
+  let tw = Math.max(96, Math.min(170, tr.width * .62));
+  let cols = Math.max(1, Math.min(n, 5, Math.floor((vw - 2 * pad - 16 + gap) / (tw + gap))));
+  if (cols < n && n <= 6 && vw > 700) cols = Math.min(n, Math.floor((vw - 48) / (tw + gap)));
+  let rows = Math.ceil(n / cols);
+  const maxH = vh - 90;
+  while (rows * (tw * 1.25 + gap) + head + pad * 2 > maxH && tw > 70) tw -= 6;
+  const th = tw * 1.25;
+  const W = cols * tw + (cols - 1) * gap + pad * 2, H = rows * th + (rows - 1) * gap + pad * 2 + head;
+  const barH = document.querySelector(".bar").getBoundingClientRect().bottom;
+  let L = tr.left + tr.width / 2 - W / 2, T = tr.top + tr.height / 2 - H / 2;
+  L = Math.max(8, Math.min(vw - 8 - W, L)); T = Math.max(barH + 8, Math.min(vh - 8 - H, T));
+
+  const root = document.createElement("div"); root.className = "spread";
+  const bg = document.createElement("div"); bg.className = "sp-bg";
+  Object.assign(bg.style, { left: L + "px", top: T + "px", width: W + "px", height: H + "px",
+    transform: `translate(${tr.left - L}px, ${tr.top - T}px) scale(${tr.width / W}, ${tr.height / H})` });
+  root.append(bg);
+  const hd = document.createElement("div"); hd.className = "sp-head";
+  Object.assign(hd.style, { left: L + pad + "px", top: T + pad - 4 + "px", width: W - pad * 2 + "px" });
+  const hb = document.createElement("b"); hb.textContent = members[0].groupName || "Group";
+  const hs = document.createElement("span"); hs.textContent = n + " pieces · click to view";
+  hd.append(hb, hs); root.append(hd);
+
+  const thumbs = members.map((m, i) => {
+    const col = i % cols, row = Math.floor(i / cols);
+    const inRow = row === rows - 1 ? n - row * cols : cols;             // center a short last row
+    const off = (cols - inRow) * (tw + gap) / 2;
+    const x = L + pad + off + col * (tw + gap), y = T + pad + head + row * (th + gap);
+    const el = document.createElement("div"); el.className = "sp-th";
+    Object.assign(el.style, { left: x + "px", top: y + "px", width: tw + "px", height: th + "px",
+      transitionDelay: (i * 28) + "ms", zIndex: n - i });
+    const rot = (i === 0 ? 0 : i % 2 ? 4 : -4);
+    el.style.transform = `translate(${tr.left - x}px, ${tr.top - y}px) scale(${tr.width / tw}) rotate(${rot}deg)`;
+    el.append(croppedImg(m));
+    if (m.title) { const sp = document.createElement("span"); sp.textContent = m.title; el.append(sp); }
+    el.onclick = e => { e.stopPropagation(); closeSpread(true); openLB(idxs[i]); };
+    root.append(el);
+    return { el, x, y, rot };
+  });
+  document.body.append(root);
+  root.getBoundingClientRect();                                            // commit start positions
+  requestAnimationFrame(() => root.classList.add("open"));
+  fig.classList.add("open");
+  spread = { fig, root, bg, thumbs, tr, box: { L, T, W, H } };
+}
+function closeSpread(instant) {
+  if (!spread) return;
+  const s = spread; spread = null;
+  s.fig.classList.remove("open");
+  if (instant) { s.root.remove(); return; }
+  const tr = s.fig.querySelector(".deck").getBoundingClientRect();
+  s.root.classList.remove("open");
+  s.thumbs.forEach(({ el, x, y, rot }, i) => {
+    el.style.transitionDelay = "0ms";
+    el.style.transform = `translate(${tr.left - x}px, ${tr.top - y}px) scale(${tr.width / parseFloat(el.style.width)}) rotate(${rot}deg)`;
+    el.style.opacity = i === 0 ? "1" : "0";
+  });
+  s.bg.style.transform = `translate(${tr.left - s.box.L}px, ${tr.top - s.box.T}px) scale(${tr.width / s.box.W}, ${tr.height / s.box.H})`;
+  setTimeout(() => s.root.remove(), 380);
+}
+// close when the pointer leaves both the stack and the spread panel
+document.addEventListener("mousemove", e => {
+  if (!spread || !canHover) return;
+  const { L, T, W, H } = spread.box, r = spread.fig.getBoundingClientRect(), m = 10;
+  const inBox = e.clientX >= L - m && e.clientX <= L + W + m && e.clientY >= T - m && e.clientY <= T + H + m;
+  const inFig = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  if (!inBox && !inFig) closeSpread();
+});
+document.addEventListener("pointerdown", e => {
+  if (spread && !e.target.closest(".spread") && !spread.fig.contains(e.target)) closeSpread();
+});
+window.addEventListener("scroll", () => closeSpread(true), { passive: true });
+window.addEventListener("resize", () => closeSpread(true));
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSpread(); });
+
+// admin: select pieces → create group
+let selecting = false;
+const selected = new Set();
+function setSelecting(on) {
+  selecting = on; selected.clear();
+  document.body.classList.toggle("selecting", on);
+  updateSelUI(); render();
+}
+function updateSelUI() {
+  $("selInfo").textContent = selected.size ? selected.size + " selected" : "Select pieces";
+  $("grpMake").disabled = selected.size < 2;
+  $("grpMake").textContent = "Create group" + (selected.size ? " (" + selected.size + ")" : "");
+}
+function toggleSel(id, fig) {
+  selected.has(id) ? selected.delete(id) : selected.add(id);
+  fig.classList.toggle("sel", selected.has(id)); updateSelUI();
+}
+$("grpBtn").onclick = () => setSelecting(true);
+$("grpCancel").onclick = () => setSelecting(false);
+$("grpMake").onclick = async () => {
+  const picked = items.filter(x => selected.has(x.id)).sort((a, b) => sortKey(a) - sortKey(b));
+  if (picked.length < 2) return;
+  const existing = picked.find(x => x.groupName);
+  const name = prompt("Name this group (e.g. a character sheet or series):", existing ? existing.groupName : "");
+  if (name === null) return;
+  const nm = name.trim() || "Untitled group";
+  const same = items.find(x => x.group && (x.groupName || "").toLowerCase() === nm.toLowerCase());
+  const gid = same ? same.group : "g" + Date.now().toString(36);
+  const cat = catOf(same || picked[0]);
+  const batch = writeBatch(db);
+  picked.forEach(x => batch.update(doc(db, "artworks", x.id), { group: gid, groupName: nm, category: cat }));
+  try { await batch.commit(); toast("Group “" + nm + "” saved"); setSelecting(false); }
+  catch (err) { console.error(err); toast("Could not create the group"); }
+};
+async function renameGroup(gid, current) {
+  const v = prompt("Rename this group:", current || "");
+  if (v === null) return;
+  const batch = writeBatch(db);
+  items.filter(x => x.group === gid).forEach(x => batch.update(doc(db, "artworks", x.id), { groupName: v.trim() || "Untitled group" }));
+  try { await batch.commit(); toast("Group renamed"); } catch (err) { console.error(err); toast("Could not rename"); }
+}
+
 // ── drag to reorder (admin) ──
 let drag = null, justDragged = false;
 function dragStart(e, fig, grip) {
-  if (!isAdmin || e.button > 0) return;
+  if (!isAdmin || selecting || e.button > 0) return;
   if (e.target.closest(".tools") && e.target !== grip) return;       // let the other admin buttons work
   if (e.pointerType !== "mouse" && e.target !== grip) return;         // on touch, only the handle drags (so the page can still scroll)
   e.preventDefault();                                                   // no text selection / native image drag
@@ -778,7 +1054,12 @@ function showLB() {
   const it = visible[cur]; if (!it) return;
   resetZ();
   lbImg.src = it.src; lbImg.alt = it.title || "";
-  $("lbT").textContent = it.title || "";
+  let cap = it.title || "";
+  if (it.group && !isAdmin) {
+    const g = visible.filter(x => x.group === it.group);
+    if (g.length > 1) cap = (it.groupName || "Group") + "  ·  " + (g.indexOf(it) + 1) + " / " + g.length + (it.title ? "  ·  " + it.title : "");
+  }
+  $("lbT").textContent = cap;
 }
 function step(d) { if (!visible.length) return; cur = (cur + d + visible.length) % visible.length; showLB(); }
 $("lbX").onclick = closeLB;
@@ -868,6 +1149,8 @@ async function compress(file) {
 // ── admin UI ──
 function setAdmin(on, email) {
   isAdmin = on;
+  if (!on && selecting) { selecting = false; selected.clear(); document.body.classList.remove("selecting"); }
+  closeSpread(true);
   document.body.classList.toggle("admin", on);
   $("who").textContent = on ? email : "";
   render();
