@@ -130,6 +130,24 @@ body.admin .lock { background: var(--charcoal); border-color: var(--charcoal); c
 
 .tools { position: absolute; top: .6rem; right: .6rem; display: none; gap: .35rem; z-index: 3; flex-wrap: wrap; justify-content: flex-end; }
 body.admin .tools { display: flex; }
+
+/* drag to reorder (admin) */
+.tools .grip { cursor: grab; touch-action: none; font-size: .8rem; letter-spacing: .05em; }
+body.admin .tile { cursor: grab; }
+.tile.ph-drag { opacity: .35 !important; }
+.tile.ph-drag .frame { outline: 2px dashed var(--lavender); outline-offset: -2px; }
+.drag-ghost {
+  position: fixed; z-index: 150; pointer-events: none; opacity: .92;
+  box-shadow: 0 24px 50px -16px rgba(52,54,51,.55); transform: rotate(-1.5deg) scale(1.03);
+}
+body.dragging-tile, body.dragging-tile * { cursor: grabbing !important; user-select: none; }
+body.dragging-tile .adminbar { pointer-events: none; opacity: .35; }
+.grid.drop-empty { min-height: 180px; background: var(--mat); outline: 1.5px dashed rgba(147,134,127,.5); outline-offset: -1px; }
+.grid.drop-empty:empty::before { content: 'Drag artwork here'; grid-column: 1 / -1; align-self: center; text-align: center; color: var(--taupe); font-size: .88rem; }
+.grid.drop-on { outline: 2px dashed var(--lavender); outline-offset: 8px; }
+#sections.noanim .tile { animation: none; opacity: 1; }
+.admin-hint { font-size: .8rem; color: var(--taupe); margin: -2rem 0 2.4rem; display: none; }
+body.admin .admin-hint { display: block; }
 .tools button, .tools select {
   border: 1px solid var(--line); border-radius: 4px; padding: .3rem .6rem; font: inherit; font-size: .72rem; cursor: pointer;
   background: #fff; color: var(--charcoal);
@@ -296,6 +314,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
     <span id="count"></span>
   </div>
   <div id="note"></div>
+  <p class="admin-hint">Admin: drag any artwork (or its ⠿ handle on touch screens) to reorder it, or drop it into another section.</p>
   <div id="sections"></div>
   <div class="empty" id="empty" hidden><strong>Coming soon</strong>New artwork is on the way.</div>
 </main>
@@ -375,7 +394,7 @@ dialog p { line-height: 1.8; color: var(--taupe); margin-bottom: 1.4rem; font-si
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const S = window.SITE;
 const $ = id => document.getElementById(id);
@@ -483,18 +502,26 @@ function tileEl(it, idx, delayN) {
     };
     const crp = document.createElement("button"); crp.textContent = "Crop";
     crp.onclick = e => { e.stopPropagation(); openCrop(it); };
-    tools.append(sel, crp, ren, del);
+    const grip = document.createElement("button"); grip.textContent = "⠿ Move"; grip.className = "grip"; grip.title = "Drag to reorder";
+    grip.onclick = e => e.stopPropagation();
+    tools.append(grip, sel, crp, ren, del);
     frame.append(tools);
+    fig.dataset.id = it.id;
+    fig.addEventListener("pointerdown", e => dragStart(e, fig, grip));
   }
 
-  fig.onclick = () => { if (it.src) openLB(idx); };
+  fig.onclick = () => { if (justDragged) return; if (it.src) openLB(idx); };
   return fig;
 }
 
+const sortKey = it => (typeof it.order === "number" ? it.order : -((it.createdAt && it.createdAt.seconds) || Date.now() / 1000));
+let skipAnimUntil = 0, pendingRender = false;
 function render() {
-  const all = configured ? items : demo;
+  if (drag) { pendingRender = true; return; }
+  const all = (configured ? items : demo).slice().sort((a, b) => sortKey(a) - sortKey(b));
   const wrap = $("sections");
   wrap.innerHTML = "";
+  wrap.classList.toggle("noanim", Date.now() < skipAnimUntil);
 
   // preview note
   $("note").innerHTML = "";
@@ -541,13 +568,17 @@ function render() {
     head.append(num, h3, sp);
     sec.append(head);
 
-    if (list.length === 0) {
+    if (list.length === 0 && isAdmin) {
+      const grid = document.createElement("div");
+      grid.className = "grid drop-empty"; grid.dataset.c = c.id;
+      sec.append(grid);
+    } else if (list.length === 0) {
       const e = document.createElement("div");
       e.className = "sec-empty"; e.textContent = "Nothing here yet.";
       sec.append(e);
     } else {
       const grid = document.createElement("div");
-      grid.className = "grid";
+      grid.className = "grid"; grid.dataset.c = c.id;
       list.forEach(it => {
         const idx = visible.push(it) - 1;
         grid.append(tileEl(it, idx, n++));
@@ -556,6 +587,109 @@ function render() {
     }
     wrap.append(sec);
   });
+}
+
+// ── drag to reorder (admin) ──
+let drag = null, justDragged = false;
+function dragStart(e, fig, grip) {
+  if (!isAdmin || e.button > 0) return;
+  if (e.target.closest(".tools") && e.target !== grip) return;       // let the other admin buttons work
+  if (e.pointerType !== "mouse" && e.target !== grip) return;         // on touch, only the handle drags (so the page can still scroll)
+  e.preventDefault();                                                   // no text selection / native image drag
+  drag = { fig, sx: e.clientX, sy: e.clientY, started: false, pid: e.pointerId, ghost: null, ox: 0, oy: 0, from: fig.parentElement, fromNext: fig.nextSibling };
+  window.addEventListener("pointermove", dragMove);
+  window.addEventListener("pointerup", dragEnd);
+  window.addEventListener("pointercancel", dragCancel);
+}
+function dragMove(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  if (!drag.started) {
+    if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 6) return;
+    drag.started = true;
+    const r = drag.fig.getBoundingClientRect();
+    drag.ox = drag.sx - r.left; drag.oy = drag.sy - r.top;
+    const g = drag.fig.querySelector(".frame").cloneNode(true);
+    g.querySelector(".tools")?.remove();
+    g.className = "frame drag-ghost"; g.style.width = r.width + "px"; g.style.height = (r.width * 5 / 4) + "px";
+    document.body.append(g); drag.ghost = g;
+    drag.fig.classList.add("ph-drag");
+    document.body.classList.add("dragging-tile");
+  }
+  e.preventDefault();
+  drag.ghost.style.left = (e.clientX - drag.ox) + "px";
+  drag.ghost.style.top = (e.clientY - drag.oy) + "px";
+  drag.lastX = e.clientX; drag.lastY = e.clientY;
+  placeAt(e.clientX, e.clientY);
+  autoScroll();
+}
+function placeAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  const grid = el && el.closest(".grid");
+  document.querySelectorAll(".grid.drop-on").forEach(g => g !== grid && g.classList.remove("drop-on"));
+  if (!grid) return;
+  grid.classList.add("drop-on");
+  const tiles = [...grid.querySelectorAll(".tile")].filter(t => t !== drag.fig);
+  let before = null;
+  for (const t of tiles) {
+    const r = t.getBoundingClientRect();
+    const sameRow = y >= r.top - 20 && y <= r.bottom + 20;
+    if ((sameRow && x < r.left + r.width / 2) || y < r.top - 20) { before = t; break; }
+  }
+  if (before) { if (drag.fig.nextSibling !== before) grid.insertBefore(drag.fig, before); }
+  else if (grid.lastElementChild !== drag.fig) grid.append(drag.fig);
+}
+let scrollRAF = 0;
+function autoScroll() {
+  cancelAnimationFrame(scrollRAF);
+  if (!drag || !drag.started) return;
+  const edge = 80, y = drag.lastY, h = window.innerHeight;
+  const v = y < edge ? -(edge - y) / 4 : y > h - edge ? (y - (h - edge)) / 4 : 0;
+  if (!v) return;
+  window.scrollBy(0, v);
+  placeAt(drag.lastX, drag.lastY);
+  scrollRAF = requestAnimationFrame(autoScroll);
+}
+function dragCleanup() {
+  window.removeEventListener("pointermove", dragMove);
+  window.removeEventListener("pointerup", dragEnd);
+  window.removeEventListener("pointercancel", dragCancel);
+  cancelAnimationFrame(scrollRAF);
+  if (drag && drag.ghost) drag.ghost.remove();
+  if (drag) drag.fig.classList.remove("ph-drag");
+  document.body.classList.remove("dragging-tile");
+  document.querySelectorAll(".grid.drop-on").forEach(g => g.classList.remove("drop-on"));
+}
+function dragCancel() {
+  if (drag && drag.started) drag.from.insertBefore(drag.fig, drag.fromNext);
+  dragCleanup(); drag = null;
+  if (pendingRender) { pendingRender = false; render(); }
+}
+async function dragEnd(e) {
+  if (!drag || e.pointerId !== drag.pid) return;
+  const d = drag;
+  dragCleanup(); drag = null;
+  if (!d.started) { if (pendingRender) { pendingRender = false; render(); } return; }
+  justDragged = true; setTimeout(() => { justDragged = false; }, 50);
+  const grid = d.fig.parentElement;
+  const changed = grid !== d.from || d.fig.nextSibling !== d.fromNext;
+  if (!changed) { if (pendingRender) { pendingRender = false; render(); } return; }
+  // write the new order for every section touched
+  const batch = writeBatch(db);
+  const touched = new Set([grid, d.from]);
+  touched.forEach(g => {
+    [...g.querySelectorAll(".tile[data-id]")].forEach((t, i) => {
+      const upd = { order: i };
+      if (g === grid && t === d.fig) upd.category = g.dataset.c;
+      batch.update(doc(db, "artworks", t.dataset.id), upd);
+      const it = items.find(x => x.id === t.dataset.id);
+      if (it) Object.assign(it, upd);                                  // update locally so it doesn't jump back
+    });
+  });
+  skipAnimUntil = Date.now() + 4000; pendingRender = false; render();
+  try {
+    await batch.commit();
+    toast(grid !== d.from ? "Moved to " + CATS.find(c => c.id === grid.dataset.c).name : "Order saved");
+  } catch (err) { console.error(err); toast("Could not save the new order"); }
 }
 
 // ── thumbnail crop ──
@@ -756,7 +890,7 @@ $("file").addEventListener("change", async e => {
       toast("Uploading " + (++n) + " of " + files.length + "…", true);
       const { url, w, h } = await compress(f);
       await addDoc(collection(db, "artworks"), {
-        title: f.name.replace(/\.[^.]+$/, ""), category: $("catSel").value, src: url, w, h, createdAt: serverTimestamp()
+        title: f.name.replace(/\.[^.]+$/, ""), category: $("catSel").value, src: url, w, h, order: -Math.floor(Date.now() / 1000), createdAt: serverTimestamp()
       });
     } catch (err) {
       console.error(err);
